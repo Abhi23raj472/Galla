@@ -1,0 +1,116 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Tosca Q Hub</title>
+<meta name="description" content="Every Tricentis Tosca question in one place: live questions from Stack Overflow, SQA Stack Exchange, Reddit, GitHub, Hacker News and DEV, plus a curated interview question bank.">
+<meta name="theme-color" content="#f6f7fb" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#0f1222" media="(prefers-color-scheme: dark)">
+<link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='8' fill='%234f46e5'/%3E%3Ctext x='16' y='22' font-family='Arial' font-weight='700' font-size='17' fill='white' text-anchor='middle'%3EQ%3C/text%3E%3C/svg%3E">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<a class="skip" href="#main">Skip to results</a>
+
+<header class="top">
+  <div class="wrap top-row">
+    <a class="brand" href="./">
+      <span class="logo" aria-hidden="true">Q</span>
+      <span><strong>Tosca Q Hub</strong><small>Every Tosca question, one place</small></span>
+    </a>
+    <nav class="tabs" role="tablist" aria-label="Sections">
+      <button role="tab" id="tab-feed" aria-controls="panel-feed" aria-selected="true" data-tab="feed">Community</button>
+      <button role="tab" id="tab-prep" aria-controls="panel-prep" aria-selected="false" data-tab="prep">Interview prep</button>
+      <button role="tab" id="tab-saved" aria-controls="panel-saved" aria-selected="false" data-tab="saved">Saved <span class="pill" id="savedCount">0</span></button>
+    </nav>
+  </div>
+</header>
+
+<main id="main" class="wrap">
+
+  <!-- Community feed -->
+  <section id="panel-feed" role="tabpanel" aria-labelledby="tab-feed">
+    <form class="search" id="searchForm" role="search">
+      <label class="sr" for="q">Search Tosca questions</label>
+      <svg class="search-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+      <input id="q" name="q" type="search" placeholder="e.g. xscan, buffer, api testing, dex agent" autocomplete="off" spellcheck="false">
+      <button type="submit" class="btn primary">Search</button>
+      <button type="button" class="btn ghost icon" id="refreshBtn" title="Fetch again, ignoring the cache" aria-label="Refresh"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M20 11a8 8 0 1 0-2.3 5.7"/><path d="M20 4v7h-7"/></svg></button>
+    </form>
+    <p class="hint">Searches every source for <b>Tosca</b> plus your words. Results are cached for 30 minutes.</p>
+
+    <div class="sources" id="sourceChips" aria-label="Sources"></div>
+
+    <div class="toolbar">
+      <div class="summary" id="summary" aria-live="polite">Loading…</div>
+      <div class="controls">
+        <label class="check"><input type="checkbox" id="unanswered"> Unanswered only</label>
+        <label class="sel"><span class="sr">Time range</span>
+          <select id="range">
+            <option value="0">Any time</option>
+            <option value="30">Past month</option>
+            <option value="365">Past year</option>
+            <option value="1095">Past 3 years</option>
+          </select>
+        </label>
+        <label class="sel"><span class="sr">Sort by</span>
+          <select id="sort">
+            <option value="recent">Most recent</option>
+            <option value="relevance">Best match</option>
+            <option value="votes">Most votes</option>
+            <option value="answers">Most answers</option>
+          </select>
+        </label>
+      </div>
+    </div>
+
+    <ol class="list" id="feedList"></ol>
+    <div class="empty" id="feedEmpty" hidden></div>
+    <button class="btn ghost more" id="moreBtn" hidden>Show more</button>
+
+    <aside class="elsewhere">
+      <h2>Search places without a public API</h2>
+      <p>These sites don't offer an open feed, so they open as a search in a new tab.</p>
+      <div class="links" id="elsewhere"></div>
+    </aside>
+  </section>
+
+  <!-- Interview prep -->
+  <section id="panel-prep" role="tabpanel" aria-labelledby="tab-prep" hidden>
+    <div class="prep-head">
+      <div>
+        <h1>Interview question bank</h1>
+        <p class="hint">Hand-written answers covering the questions that come up most in Tosca interviews.</p>
+      </div>
+      <label class="search small"><span class="sr">Filter interview questions</span>
+        <svg class="search-ico" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        <input id="prepQ" type="search" placeholder="Filter questions" autocomplete="off">
+      </label>
+    </div>
+    <div class="cats" id="prepCats" aria-label="Topics"></div>
+    <div class="prep-tools">
+      <span id="prepSummary" aria-live="polite"></span>
+      <span><button class="link" id="expandAll">Expand all</button> · <button class="link" id="collapseAll">Collapse all</button></span>
+    </div>
+    <div class="qa" id="prepList"></div>
+  </section>
+
+  <!-- Saved -->
+  <section id="panel-saved" role="tabpanel" aria-labelledby="tab-saved" hidden>
+    <h1>Saved questions</h1>
+    <p class="hint">Saved in this browser only.</p>
+    <ol class="list" id="savedList"></ol>
+    <div class="empty" id="savedEmpty" hidden>Nothing saved yet. Tap the bookmark on any question to keep it here.</div>
+  </section>
+</main>
+
+<footer class="foot wrap">
+  <p>Questions belong to their authors and link back to the original post. Tosca and Tricentis are trademarks of Tricentis; this site is not affiliated with them.</p>
+</footer>
+
+<script src="sources.js"></script>
+<script src="interview.js"></script>
+<script src="app.js"></script>
+</body>
+</html>
