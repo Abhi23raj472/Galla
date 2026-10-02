@@ -33,7 +33,7 @@ with sync_playwright() as p:
         if cat: pg.click(f'#catGrid label:has-text("{cat}")')
         if date: pg.fill("#fDate", date)
         if repeat: pg.check("#fRepeat")
-        pg.click("#submitBtn"); pg.wait_for_timeout(120)
+        pg.click("#submitBtn"); pg.locator("#scrim").wait_for(state="hidden"); pg.wait_for_timeout(300)
     def db(prefix): return E(f"Object.keys(JSON.parse(localStorage.getItem('mockdb')||'{{}}')).filter(k=>k.includes({json.dumps(prefix)}))")
 
     # ---- load
@@ -47,7 +47,7 @@ with sync_playwright() as p:
     check("expense saved to account", len(db("/ledger/expenses/")) == 1)
     check("hero shows spent ₹250", pg.inner_text("#hSpent") == "₹250", pg.inner_text("#hSpent"))
     check("welcome hidden after first entry", not pg.is_visible("#welcome"))
-    pg.click("#recent .tx"); pg.fill("#fAmount", "300"); pg.click("#submitBtn"); pg.wait_for_timeout(120)
+    pg.click("#recent .tx"); pg.fill("#fAmount", "300"); pg.click("#submitBtn"); pg.locator("#scrim").wait_for(state="hidden"); pg.wait_for_timeout(300)
     check("edit keeps one entry", E("txns.length") == 1)
     check("edit updates amount", E("txns[0].amount") == 300)
     add(50000, "Salary", "Salary", typ="income")
@@ -59,11 +59,11 @@ with sync_playwright() as p:
     pg.click("#closeSheet")
     pg.click('#recent .tx:has-text("Lunch")'); pg.click("#deleteBtn")
     check("delete needs confirmation", E("txns.length") == 2)
-    pg.click("#deleteBtn"); pg.wait_for_timeout(120)
+    pg.click("#deleteBtn"); pg.wait_for_timeout(400)
     check("delete removes entry", E("txns.length") == 1 and len(db("/ledger/expenses/")) == 1)
 
     # ---- reload persistence
-    pg.reload(); pg.wait_for_function("ready.txns && ready.rules && ready.settings"); pg.wait_for_timeout(150)
+    pg.reload(); pg.wait_for_function("ready.txns && ready.rules && ready.settings"); pg.wait_for_timeout(500)
     check("entries survive reload", E("txns.length") == 1)
 
     # ---- PIN lock
@@ -73,10 +73,10 @@ with sync_playwright() as p:
     pg.fill("#aPin1","1234"); pg.fill("#aPin2","1234"); pg.click('#aPinForm button[type="submit"]'); pg.wait_for_timeout(200)
     check("PIN turned on + saved", E("hasPin()") and "pinHash" in pg.evaluate("localStorage.getItem('mockdb')"))
     check("PIN not stored in plain text", '"1234"' not in pg.evaluate("localStorage.getItem('mockdb')"))
-    pg.reload(); pg.wait_for_function("ready.settings"); pg.wait_for_timeout(150)
+    pg.reload(); pg.wait_for_function("ready.settings"); pg.wait_for_timeout(500)
     check("app locked after reload", pg.is_visible("#lock") and "Enter your PIN" in pg.inner_text("#lock"))
     for k in "1111": pg.click(f'#lock [data-k="{k}"]')
-    pg.wait_for_timeout(150)
+    pg.wait_for_timeout(500)
     check("wrong PIN keeps it locked", pg.is_visible("#lock") and "Wrong PIN" in pg.inner_text("#lkMsg"))
     for _ in range(4):
         for k in "9999": pg.click(f'#lock [data-k="{k}"]')
@@ -85,7 +85,7 @@ with sync_playwright() as p:
     E("lockState.until=0; renderLock()")
     pg.keyboard.type("1234"); pg.wait_for_timeout(200)
     check("correct PIN (keyboard) unlocks", not pg.is_visible("#lock"))
-    pg.click("#acctBtn"); pg.click("#aChange"); pg.fill("#aCur","0000"); pg.fill("#aPin1","5678"); pg.fill("#aPin2","5678"); pg.click('#aPinForm button[type="submit"]'); pg.wait_for_timeout(150)
+    pg.click("#acctBtn"); pg.click("#aChange"); pg.fill("#aCur","0000"); pg.fill("#aPin1","5678"); pg.fill("#aPin2","5678"); pg.click('#aPinForm button[type="submit"]'); pg.wait_for_timeout(500)
     check("change PIN needs current PIN", "wrong" in pg.inner_text("#aErr"))
     pg.fill("#aCur","1234"); pg.click('#aPinForm button[type="submit"]'); pg.wait_for_timeout(200)
     pg.click("#aLockNow"); pg.wait_for_timeout(100)
@@ -96,8 +96,8 @@ with sync_playwright() as p:
     pg.click("#acctBtn"); pg.click("#aRemove"); pg.fill("#aOffPin","5678"); pg.click('#aOffForm button[type="submit"]'); pg.wait_for_timeout(200)
     check("PIN turned off", not E("hasPin()"))
     # forgot PIN path
-    E("(async()=>{const s='sx';settings={...settings,pinSalt:s,pinHash:await hashPin('4321',s)};await store.saveSettings(settings)})()"); pg.wait_for_timeout(150)
-    pg.reload(); pg.wait_for_function("ready.settings"); pg.wait_for_timeout(150)
+    E("(async()=>{const s='sx';settings={...settings,pinSalt:s,pinHash:await hashPin('4321',s)};await store.saveSettings(settings)})()"); pg.wait_for_timeout(500)
+    pg.reload(); pg.wait_for_function("ready.settings"); pg.wait_for_timeout(500)
     pg.click("#lkForgot"); pg.click("#lkReset"); pg.wait_for_timeout(200)
     check("forgot PIN removes lock, keeps entries", not pg.is_visible("#lock") and not E("hasPin()") and E("txns.length")==1)
 
@@ -116,38 +116,38 @@ with sync_playwright() as p:
     E(f"openSheet(txns.find(t=>t.id==={json.dumps(rid)}))"); pg.click("#deleteBtn"); pg.click("#deleteBtn"); pg.wait_for_timeout(200)
     pg.reload(); pg.wait_for_function("ready.txns && ready.rules && ready.settings"); pg.wait_for_timeout(250)
     check("deleted recurring entry stays deleted", E(f"!txns.some(t=>t.id==={json.dumps(rid)})"))
-    tab("recurring"); pg.click('#rules [data-act="toggle"]'); pg.wait_for_timeout(120)
+    tab("recurring"); pg.click('#rules [data-act="toggle"]'); pg.wait_for_timeout(400)
     check("pause recurring", E("rules[0].active") is False)
     check("month bar visible on Recurring", pg.is_visible("#monthBar"))
 
     # ---- budgets
-    tab("budgets"); pg.fill("#overallBudget", "40000"); pg.press("#overallBudget", "Tab"); pg.wait_for_timeout(120)
+    tab("budgets"); pg.fill("#overallBudget", "40000"); pg.press("#overallBudget", "Tab"); pg.wait_for_timeout(400)
     check("overall budget saved", E("settings.budget") == 40000)
     add(900, "Dinner", "Food & dining")
     tab("budgets")
-    pg.fill('#budList input[data-cat="Food & dining"]', "500"); pg.press('#budList input[data-cat="Food & dining"]', "Tab"); pg.wait_for_timeout(150)
+    pg.fill('#budList input[data-cat="Food & dining"]', "500"); pg.press('#budList input[data-cat="Food & dining"]', "Tab"); pg.wait_for_timeout(500)
     check("category limit saved", E("settings.catBudgets['Food & dining']") == 500)
     check("over-limit status shown", "Over" in pg.inner_text("#budList .bud:first-child"), pg.inner_text("#budList .bud:first-child")[:80])
-    pg.fill('#budList input[data-cat="Food & dining"]', ""); pg.press('#budList input[data-cat="Food & dining"]', "Tab"); pg.wait_for_timeout(120)
+    pg.fill('#budList input[data-cat="Food & dining"]', ""); pg.press('#budList input[data-cat="Food & dining"]', "Tab"); pg.wait_for_timeout(400)
     check("clearing a limit removes it", E("!('Food & dining' in settings.catBudgets)"))
 
     # ---- split: friends & groups
     fresh()
     tab("split")
     check("month bar hidden on Split", not pg.is_visible("#monthBar"))
-    pg.click("#newFriend"); pg.fill("#dName", "Rahul"); pg.fill("#dUpi", "rahul@okaxis"); pg.click('#dForm button[type="submit"]'); pg.wait_for_timeout(120)
+    pg.click("#newFriend"); pg.fill("#dName", "Rahul"); pg.fill("#dUpi", "rahul@okaxis"); pg.click('#dForm button[type="submit"]'); pg.wait_for_timeout(400)
     check("friend created + saved", E("people.length") == 1 and len(db("/ledger/people/")) == 1)
     pg.click("[data-close]")
     pg.click("#newGroup"); pg.fill("#dName", "Goa trip")
-    pg.click('#dMembers label'); pg.fill("#dNew", "Aman"); pg.press("#dNew", "Enter"); pg.wait_for_timeout(120)
+    pg.click('#dMembers label'); pg.fill("#dNew", "Aman"); pg.press("#dNew", "Enter"); pg.wait_for_timeout(400)
     check("group form keeps name after adding member", pg.input_value("#dName") == "Goa trip", pg.input_value("#dName"))
-    pg.click('#dForm button[type="submit"]'); pg.wait_for_timeout(150)
+    pg.click('#dForm button[type="submit"]'); pg.wait_for_timeout(500)
     check("group created with 2 members", E("groups.length===1 && groups[0].members.length===2"), E("JSON.stringify(groups)"))
     # add group expense from group sheet: 900 equally, paid by me
     pg.click("#gAdd"); pg.fill("#fAmount", "900"); pg.fill("#fDesc", "Villa"); pg.wait_for_timeout(50)
     check("split preselects group members", E("sf.parts.size") == 3)
     check("equal share preview", "₹300" in pg.inner_text("#shares"), pg.inner_text("#shares"))
-    pg.click("#submitBtn"); pg.wait_for_timeout(150)
+    pg.click("#submitBtn"); pg.wait_for_timeout(500)
     t = E("JSON.stringify(txns[0])")
     check("personal amount = my share", E("txns[0].amount") == 300, t)
     check("split total stored", E("txns[0].split.total") == 900)
@@ -159,7 +159,7 @@ with sync_playwright() as p:
     pg.click("#fab"); pg.fill("#fAmount", "600"); pg.fill("#fDesc", "Cab"); pg.check("#fSplit")
     pg.select_option("#fGroup", ""); pg.wait_for_timeout(50)
     E("sf.parts=new Set(['me',%s]);renderSplitForm()" % json.dumps(rahul))
-    pg.select_option("#fPaidBy", rahul); pg.click("#submitBtn"); pg.wait_for_timeout(150)
+    pg.select_option("#fPaidBy", rahul); pg.click("#submitBtn"); pg.wait_for_timeout(500)
     check("friend-paid: I owe share", E(f"balancesWithMe()[{json.dumps(rahul)}]") == 0, E("JSON.stringify(balancesWithMe())"))
     # uneven: exact mode mismatch rejected
     n0 = E("txns.length")
@@ -169,14 +169,14 @@ with sync_playwright() as p:
     check("exact mismatch message", "still to assign" in pg.inner_text("#remain"), pg.inner_text("#remain"))
     pg.click("#submitBtn"); pg.wait_for_timeout(100)
     check("exact mismatch not saved", E("txns.length") == n0)
-    ins[2].fill("300"); pg.click("#submitBtn"); pg.wait_for_timeout(150)
+    ins[2].fill("300"); pg.click("#submitBtn"); pg.wait_for_timeout(500)
     check("exact split saved", E("txns.length") == n0 + 1)
     # percent mode redistributes when a person is removed
     pg.click("#fab"); pg.fill("#fAmount", "1000"); pg.fill("#fDesc", "Boat"); pg.check("#fSplit")
     pg.select_option("#fGroup", E("groups[0].id")); pg.click('#splitMode [data-m="pct"]')
     pg.click("#pChips label >> nth=2"); pg.wait_for_timeout(50)
     check("percent resets to 100% after removing someone", "Your share" in pg.inner_text("#remain"), pg.inner_text("#remain"))
-    pg.click("#submitBtn"); pg.wait_for_timeout(150)
+    pg.click("#submitBtn"); pg.wait_for_timeout(500)
     boat = E("JSON.stringify(txns.find(t=>t.desc==='Boat').split.shares)")
     check("percent split = 500/500", E("Object.values(txns.find(t=>t.desc==='Boat').split.shares).sort().join()") == "500,500", boat)
     # consistency: friend balances == group pairs involving me
@@ -189,7 +189,7 @@ with sync_playwright() as p:
     E(f"openDetail({{kind:'group',id:{json.dumps(g)}}})")
     pairs = E("groupPairs(groups[0]).filter(x=>x.from==='me'||x.to==='me').length")
     before = E("JSON.stringify(balancesWithMe())")
-    pg.click('#detail [data-sug="0"]'); pg.wait_for_timeout(150)
+    pg.click('#detail [data-sug="0"]'); pg.wait_for_timeout(500)
     check("mark-paid records settlement", E("txns.some(t=>t.type==='settle')"), before)
     check("settled pair disappears", E("groupPairs(groups[0]).filter(x=>x.from==='me'||x.to==='me').length") == pairs - 1)
     # friend detail settle-up to zero
@@ -198,7 +198,7 @@ with sync_playwright() as p:
     E(f"openDetail({{kind:'friend',id:{json.dumps(aman)}}})")
     amt = E(f"balancesWithMe()[{json.dumps(aman)}]||0")
     if abs(amt) > 0.009:
-        pg.click('#dSettle button[type="submit"]'); pg.wait_for_timeout(150)
+        pg.click('#dSettle button[type="submit"]'); pg.wait_for_timeout(500)
     check("friend settle-up clears balance", abs(E(f"balancesWithMe()[{json.dumps(aman)}]||0")) < 0.01, str(amt))
     # clipboard fallback (headless clipboard is denied)
     E(f"txns.push({{id:'x1',type:'expense',amount:100,desc:'Snacks',cat:'Other',pay:'UPI',date:todayISO(),created:1,split:{{group:null,paidBy:'me',total:600,shares:{{me:100,{json.dumps(rahul)}:500}},mode:'equal',vals:{{}}}}}});store.saveTxn(txns[txns.length-1]);render()")
@@ -210,7 +210,7 @@ with sync_playwright() as p:
     check("reminder text names amount", (not has_ta) or "₹200" in ta, ta)
     pg.click("[data-close]")
     # delete group keeps balances
-    pg.wait_for_timeout(150); b1 = E("balancesWithMe()")
+    pg.wait_for_timeout(500); b1 = E("balancesWithMe()")
     E(f"openDetail({{kind:'editGroup',id:{json.dumps(g)}}})"); pg.click("#dDel"); pg.click("#dDel"); pg.wait_for_timeout(200)
     check("group deleted", E("groups.length") == 0)
     b2=E("balancesWithMe()"); check("balances unchanged after group delete", b2 == b1, f"{b1} -> {b2}")
@@ -219,7 +219,7 @@ with sync_playwright() as p:
     vid = E("txns.find(t=>t.desc==='Villa').id")
     E(f"openSheet(txns.find(t=>t.id==={json.dumps(vid)}))")
     check("edit prefills split total", pg.input_value("#fAmount") == "900")
-    pg.uncheck("#fSplit"); pg.click("#submitBtn"); pg.wait_for_timeout(150)
+    pg.uncheck("#fSplit"); pg.click("#submitBtn"); pg.wait_for_timeout(500)
     check("unsplit keeps full amount, no split", E(f"(t=>t.amount===900&&!t.split)(txns.find(t=>t.id==={json.dumps(vid)}))"))
     # settle rows hidden from Entries
     tab("transactions")
@@ -236,7 +236,7 @@ with sync_playwright() as p:
 
     # ---- calendar + filters + month nav
     add(120, "Tea", "Food & dining"); add(80, "Bus", "Transport")
-    tab("overview"); pg.click(f'#cal [data-day="{E("todayISO()")}"]')
+    tab("overview"); pg.click('.spending-details summary'); pg.click(f'#cal [data-day="{E("todayISO()")}"]')
     check("calendar day opens filtered Entries", E("tab") == "transactions" and E("filt.day") == E("todayISO()"))
     pg.click("#clearDay"); pg.fill("#search", "bus")
     check("search filters", pg.inner_text("#list").count("Bus") == 1 and "Tea" not in pg.inner_text("#list"))
@@ -248,7 +248,7 @@ with sync_playwright() as p:
     check("back to this month", E("cur===todayISO().slice(0,7)"))
 
     # ---- CSV
-    pg.click("#exportBtn"); pg.wait_for_timeout(150)
+    pg.click("#exportBtn"); pg.wait_for_timeout(500)
     dl = E("window.__dl[0]")
     check("CSV export produced", dl and dl["filename"].endswith(".csv") and dl["data"].startswith('"Date","Type"'), str(dl)[:120])
 
@@ -257,7 +257,7 @@ with sync_playwright() as p:
     check("works without account (browser storage)", "this browser only" in pg.inner_text("#status"), pg.inner_text("#status"))
     add(99, "Offline test", "Other")
     pg.reload(); pg.wait_for_timeout(11500)
-    check("browser storage persists", E("txns.length") == 1)
+    check("browser storage persists", E("txns.length") == 1, E("JSON.stringify({count:txns.length,ledger:localStorage.getItem('kharcha-ledger-v2')})"))
     E("localStorage.clear()")
 
     # ---- layout: phone + desktop, light + dark, every tab
@@ -290,3 +290,4 @@ srv.shutdown()
 print(f"\n{len(results)-len(fails)}/{len(results)} passed")
 for f in fails: print("FAIL:", f[1], f[2])
 sys.exit(1 if fails else 0)
+

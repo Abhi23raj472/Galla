@@ -4,14 +4,26 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Galla: track personal spending and split shared expenses with friends, in rupees.">
-<meta name="theme-color" content="#2F5BEA">
+<meta name="theme-color" content="#eeeefe">
+<title>Galla — Expense Tracker, Budgets &amp; Bill Splitting</title>
+<link rel="canonical" href="https://abhi23raj472.github.io/Galla/">
+<meta name="robots" content="index,follow">
+<meta property="og:type" content="website">
+<meta property="og:title" content="Galla — Spend, Split, Settle">
+<meta property="og:description" content="Track expenses in rupees, manage monthly budgets and split bills with friends. Your ledger stays in your browser.">
+<meta property="og:url" content="https://abhi23raj472.github.io/Galla/">
+<meta name="twitter:card" content="summary">
+<meta name="twitter:title" content="Galla — Expense Tracker & Bill Splitting">
+<meta name="twitter:description" content="A simpler way to track expenses, budget and settle shared bills in rupees.">
+<script type="application/ld+json">{"@context":"https://schema.org","@type":"WebApplication","name":"Galla","url":"https://abhi23raj472.github.io/Galla/","description":"Personal expense tracking, monthly budgets and bill splitting in Indian rupees.","applicationCategory":"FinanceApplication","operatingSystem":"Any","browserRequirements":"Requires JavaScript","offers":{"@type":"Offer","price":"0","priceCurrency":"INR"}}</script>
 <link rel="icon" type="image/svg+xml" href="assets/galla-logo.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
 <style>:root{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
-<title>Galla</title>
-<link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+
 <style>
 /* Layout: light, airy app shell — pastel hero card, white floating cards, pill tabs; bottom nav + add button on phones, top tabs on desktop; add/edit in a bottom sheet. Single light theme by design. */
 :root{
@@ -326,11 +338,19 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
+<link rel="stylesheet" href="glass.css">
+<noscript><p class="card">Galla helps you track expenses, manage budgets and split bills in rupees. Enable JavaScript to use your private ledger.</p></noscript>
+<a class="skip-link" href="#mainContent">Skip to dashboard</a>
+<aside class="sidebar" aria-label="Galla navigation">
+ <a class="sidebar-brand" href="./" aria-label="Galla home"><img src="assets/galla-logo.svg" width="48" height="48" alt=""><div><strong>Galla</strong><span>Spend · Split · Settle</span></div></a>
+ <nav class="tabs" id="topTabs" role="tablist" aria-label="Sections"></nav>
+ <div class="sidebar-foot"><button class="ghost" data-account>Account &amp; PIN lock</button><p>Your ledger.<br>Your browser. Your control.</p></div>
+</aside>
 <div class="app">
-  <header class="top">
+  <header class="top"><div class="page-intro"><h1 id="pageTitle">Overview</h1><p id="pageSubtitle">A little clarity for your everyday money.</p></div>
     <div class="top-row">
-      <div class="brand"><span class="logo" id="brandLogo"></span><div><h1>Galla</h1><div class="tagline">Spend · Split · Settle</div></div></div>
-      <nav class="tabs" id="topTabs" role="tablist" aria-label="Sections"></nav>
+      <div class="brand"><span class="logo" id="brandLogo"></span><div><span class="mobile-brand-name">Galla</span><div class="tagline">Spend · Split · Settle</div></div></div>
+
       <div class="top-actions">
         <button class="acct" id="acctBtn" aria-label="Account and PIN lock"><span id="acctAv"></span><span class="nm" id="acctName">Account</span><svg class="i" data-i="lock"></svg></button>
         <button class="iconbtn" id="exportBtn" hidden title="Export all entries as CSV" aria-label="Export CSV"><svg class="i" data-i="download"></svg><span>CSV</span></button>
@@ -347,52 +367,40 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
     </div>
   </header>
 
-  <main>
+  <main id="mainContent">
     <!-- OVERVIEW -->
     <section class="panel" data-panel="overview">
       <div class="card welcome" id="welcome" hidden>
-        <div><h2>Start your ledger</h2><p>Log what you spend and earn, set a monthly budget, and add rent or SIPs once as recurring entries. Everything saves to your account.</p></div>
+        <div><h2>Start your ledger</h2><p>Log what you spend and earn, set a monthly budget, and add rent or SIPs once as recurring entries. Your entries are saved privately in this browser.</p></div>
         <div class="btns"><button class="primary" data-add>Add first entry</button><button class="ghost" data-sample>Try sample data</button></div>
       </div>
 
-      <div class="hero">
-        <div>
-          <div class="lbl" id="balLbl">Left this month</div>
-          <div class="big num" id="balance">₹0</div>
+      <div class="dashboard-grid">
+        <div class="dashboard-main">
+          <section class="hero balance-card" aria-label="Monthly balance">
+            <div><div class="lbl" id="balLbl">Left this month</div><div class="big num" id="balance">₹0</div><p class="balance-caption">Your income and spending, in one clear view.</p></div>
+            <div class="hero-stats">
+              <div class="hero-stat"><div class="l"><i style="background:var(--income)"></i>Income</div><div class="v" id="hIncome">₹0</div></div>
+              <div class="hero-stat"><div class="l"><i style="background:var(--danger)"></i>Spending</div><div class="v" id="hSpent">₹0</div></div>
+              <div class="hero-stat" title="Daily spending excludes rent, investments and recurring entries"><div class="l">Daily average spend</div><div class="v" id="hDaily">₹0</div></div>
+            </div>
+          </section>
+          <section class="card activity-card">
+            <div class="card-h"><h2>Income vs spending</h2><div class="key"><span><i style="background:var(--income)"></i>Income</span><span><i style="background:var(--accent)"></i>Spending</span></div></div>
+            <p class="section-caption">Your last six months at a glance</p><div class="trend" id="trend"></div>
+            <div class="recent-section"><div class="card-h"><h2>Recent transactions</h2><button class="linkbtn" data-goto="transactions">See all entries</button></div><div id="recent"></div></div>
+          </section>
         </div>
-        <div class="hero-stats">
-          <div class="hero-stat"><div class="l"><i style="background:var(--income)"></i>Income</div><div class="v" id="hIncome">₹0</div></div>
-          <div class="hero-stat"><div class="l"><i style="background:var(--marigold)"></i>Spent</div><div class="v" id="hSpent">₹0</div></div>
-          <div class="hero-stat" title="Average day-to-day spending. Leaves out rent, investments and recurring payments."><div class="l">Daily spend</div><div class="v" id="hDaily">₹0</div></div>
-        </div>
-        <div>
-          <div class="meter" id="meter"><i style="width:0"></i></div>
-          <div class="budget-line"><span id="budgetText">No monthly budget set</span><button class="linkbtn" data-goto="budgets">Budgets</button></div>
-        </div>
+        <aside class="card dashboard-side" aria-label="Budget and upcoming expenses">
+          <div class="card-h"><h2>Monthly budget</h2><button class="linkbtn" data-goto="budgets">Set budget</button></div>
+          <div class="budget-overview"><strong id="overviewBudgetAmount">No budget yet</strong><span id="overviewBudgetPercent"></span></div>
+          <div class="meter" id="meter"><i style="width:0"></i></div><div class="budget-line"><span id="budgetText">Set a limit to stay on track</span></div>
+          <div class="side-section"><div class="card-h"><h2>Top categories</h2><span class="sub" id="donutSub"></span></div><div id="donut"></div></div>
+          <div class="side-section"><div class="card-h"><h2>Upcoming recurring</h2><button class="linkbtn" data-goto="recurring">See all</button></div><div id="upcomingPreview"></div></div>
+        </aside>
       </div>
+      <details class="card spending-details"><summary>Daily spending &amp; insights<span>Explore your spending patterns</span></summary><div class="details-content"><div class="grid3" id="insights"></div><div class="card-h"><h2>Daily spending</h2><span class="sub">Choose a day to see its entries</span></div><div id="cal"></div></div></details>
 
-      <div class="grid3" id="insights"></div>
-
-      <div class="grid2">
-        <section class="card">
-          <div class="card-h"><h2>Where it went</h2><span class="sub" id="donutSub"></span></div>
-          <div id="donut"></div>
-        </section>
-        <section class="card">
-          <div class="card-h"><h2>Daily spending</h2><span class="sub">Tap a day to see entries</span></div>
-          <div id="cal"></div>
-        </section>
-      </div>
-
-      <section class="card">
-        <div class="card-h"><h2>Last 6 months</h2><div class="key"><span><i style="background:var(--income)"></i>Income</span><span><i style="background:var(--accent)"></i>Spent</span></div></div>
-        <div class="trend" id="trend"></div>
-      </section>
-
-      <section class="card">
-        <div class="card-h"><h2>Recent</h2><button class="linkbtn" data-goto="transactions">See all</button></div>
-        <div id="recent"></div>
-      </section>
     </section>
 
     <!-- TRANSACTIONS -->
@@ -605,6 +613,7 @@ function go(t){
 }
 buildTabs();
 document.addEventListener("click",e=>{
+  if(e.target.closest("[data-account]")){$("acctBtn").click();return}
   const g=e.target.closest("[data-goto]"); if(g){go(g.dataset.goto);return}
   if(e.target.closest("[data-add]")){openSheet();return}
   if(e.target.closest("[data-sample]")){addSamples();return}
@@ -616,6 +625,10 @@ const sum=(arr,type)=>arr.filter(t=>typeOf(t)===type).reduce((s,t)=>s+t.amount,0
 
 // ---------- render ----------
 function render(){
+  const section=TABS.find(x=>x[0]===tab);
+  $("pageTitle").textContent=section?section[1]:"Overview";
+  const subtitles={overview:"A little clarity for your everyday money.",transactions:"Every entry, organized and easy to find.",split:"Shared expenses. Clear balances. Happier friends.",budgets:"Give every rupee a little direction.",recurring:"Set it once. Keep life moving."};
+  $("pageSubtitle").textContent=subtitles[tab];
   const isNow=cur===todayISO().slice(0,7);
   $("monthLabel").textContent=mName(cur);
   $("thisMonth").hidden=isNow;
@@ -673,6 +686,12 @@ function renderOverview(){
       <div class="legend">${shown.map(([n,v])=>`<div class="legend-row"><span class="sw" style="background:${n==="More"?"#9AA8A4":cat(n).c}"></span><span class="n">${esc(n)}</span><span class="a num">${inr.format(v)} · ${Math.round(v/exp*100)}%</span></div>`).join("")}</div></div>`;
   }
 
+  // Glass overview: category progress and recurring preview use real ledger data.
+  $("overviewBudgetAmount").textContent=b?`${inr.format(exp)} of ${inr.format(b)}`:"No budget set";
+  $("overviewBudgetPercent").textContent=b?`${Math.round(pct)}%`:"";
+  $("donut").innerHTML=rows.length?rows.slice(0,4).map(([name,value])=>`<div class="category-row">${catIcon(name)}<div><div class="category-top"><span>${esc(name)}</span><span class="num">${inr.format(value)} · ${Math.round(value/exp*100)}%</span></div><div class="category-progress"><i style="width:${value/exp*100}%"></i></div></div></div>`).join(""):'<div class="empty"><strong>No spending yet</strong>Your categories appear after your first expense.</div>';
+  const upcoming=rules.filter(r=>r.active).map(r=>{let k=today.slice(0,7);if(k<r.start)k=r.start;let date=`${k}-${pad(Math.min(r.day,dim(k)))}`;if(date<=today){k=shiftM(k,1);date=`${k}-${pad(Math.min(r.day,dim(k)))}`;}return {r,date}}).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
+  $("upcomingPreview").innerHTML=upcoming.length?upcoming.map(({r,date})=>`<div class="upcoming-row">${catIcon(r.cat)}<div><strong>${esc(r.desc)}</strong><small>${dName(date,{day:"numeric",month:"short"})}</small></div><span class="num">${typeOf(r)==="income"?"+":"−"}${inr.format(r.amount)}</span></div>`).join(""):'<div class="empty"><strong>Nothing scheduled</strong><button class="linkbtn" data-goto="recurring">Add rent, salary or subscriptions</button></div>';
   // calendar
   const days=dim(cur), [yy,mm]=cur.split("-").map(Number), start=(new Date(yy,mm-1,1).getDay()+6)%7;
   const perDay={}; mt.filter(t=>typeOf(t)==="expense").forEach(t=>perDay[t.date]=(perDay[t.date]||0)+t.amount);
@@ -704,7 +723,7 @@ function renderOverview(){
   $("trend").innerHTML=s+"</svg>";
 
   // recent
-  const rec=mt.filter(t=>typeOf(t)!=="settle").sort((a,b)=>b.date.localeCompare(a.date)||(b.created||0)-(a.created||0)).slice(0,5);
+  const rec=mt.filter(t=>typeOf(t)!=="settle").sort((a,b)=>b.date.localeCompare(a.date)||(b.created||0)-(a.created||0)).slice(0,3);
   $("recent").innerHTML=rec.length?rec.map(txRow).join(""):`<div class="empty" style="padding:16px"><strong>Nothing in ${mName(cur,{month:"long"})}</strong><div class="btns"><button class="primary" data-add>Add entry</button></div></div>`;
   bindTx($("recent"));
 }
@@ -1340,7 +1359,8 @@ $("removeSamples").onclick=async()=>{
 };
 
 // ---------- export ----------
-let downloads=null;
+const browserDownloads={save:async({filename,data})=>{const url=URL.createObjectURL(new Blob([data],{type:"text/csv;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);return{status:"saved"}}};
+let downloads=browserDownloads;
 $("exportBtn").onclick=async()=>{
   const q=v=>`"${String(v).replace(/"/g,'""')}"`;
   const rows=[["Date","Type","Category","Description","Amount (INR)","Paid via"]].concat(txns.slice().sort((a,b)=>a.date.localeCompare(b.date)).map(t=>typeOf(t)==="settle"?[t.date,"settle-up","",`${pName(t.from)} paid ${pName(t.to)}`,t.amount,""]:[t.date,typeOf(t),t.cat,t.desc+(t.split?` (split, total ${t.split.total})`:""),t.amount,t.pay]));
@@ -1364,12 +1384,12 @@ render();
     db=await claude.use("db"); const user=await claude.use("user"); uid=user?await user.id():null;
     if(user){try{const m=await user.me();me.name=(m&&m.name)||""}catch{}}
     showAccount();
-    downloads=await claude.use("downloads");
+    downloads=await claude.use("downloads")||browserDownloads;
   }catch{}
   $("exportBtn").hidden=!downloads;
   if(!db||!uid){
     store=localStore(); ready={txns:true,rules:true,settings:true}; materialize(); render(); decideLock();
-    $("status").textContent="Saved in this browser only. Sign in to claude.ai to keep your ledger in your account.";
+    $("status").textContent="Saved in this browser only. Export CSV for a backup. Data stays on this device.";
     return;
   }
   const root=db.doc("data/users/"+uid+"/ledger");
@@ -1406,3 +1426,4 @@ const lost=()=>{$("status").textContent="Lost connection to your saved ledger. R
 
 </body>
 </html>
+
