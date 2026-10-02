@@ -344,7 +344,7 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
 <aside class="sidebar" aria-label="Galla navigation">
  <a class="sidebar-brand" href="./" aria-label="Galla home"><img src="assets/galla-logo.svg" width="48" height="48" alt=""><div><strong>Galla</strong><span>Spend · Split · Settle</span></div></a>
  <nav class="tabs" id="topTabs" role="tablist" aria-label="Sections"></nav>
- <div class="sidebar-foot"><button class="ghost" data-account>Account &amp; PIN lock</button><p>Your ledger.<br>Your browser. Your control.</p></div>
+ <div class="sidebar-foot"><p>Your ledger.<br>Your browser. Your control.</p></div>
 </aside>
 <div class="app">
   <header class="top"><div class="page-intro"><h1 id="pageTitle">Overview</h1><p id="pageSubtitle">A little clarity for your everyday money.</p></div>
@@ -352,7 +352,7 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
       <div class="brand"><span class="logo" id="brandLogo"></span><div><span class="mobile-brand-name">Galla</span><div class="tagline">Spend · Split · Settle</div></div></div>
 
       <div class="top-actions">
-        <button class="acct" id="acctBtn" aria-label="Account and PIN lock"><span id="acctAv"></span><span class="nm" id="acctName">Account</span><svg class="i" data-i="lock"></svg></button>
+        
         <button class="iconbtn" id="exportBtn" hidden title="Export all entries as CSV" aria-label="Export CSV"><svg class="i" data-i="download"></svg><span>CSV</span></button>
         <button class="primary desk" id="addBtnDesk"><svg class="i" data-i="plus"></svg>Add entry</button>
       </div>
@@ -515,8 +515,7 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
 <div class="scrim" id="scrim2" hidden>
   <div class="sheet" role="dialog" aria-modal="true" aria-label="Details"><div class="grab"></div><div id="detail"></div></div>
 </div>
-<div class="lock" id="lock" role="dialog" aria-modal="true" aria-label="Unlock Galla">
-  <div class="lock-box" id="lockBox"><span class="logo" id="lockLogo"></span><div class="lock-loading">Opening Galla…</div></div>
+
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
@@ -559,7 +558,7 @@ function logo(label="Galla"){const n=++_logoN;return `<svg viewBox="0 0 48 48" r
 const svg=(n,cls="i")=>`<svg class="${cls}" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">${ICONS[n]||ICONS.dots}</svg>`;
 document.querySelectorAll("svg[data-i]").forEach(s=>s.outerHTML=svg(s.dataset.i));
 document.getElementById("brandLogo").innerHTML=logo();
-document.getElementById("lockLogo").innerHTML=logo();
+
 
 const EXP=[
   {n:"Food & dining",c:"#E0901B",i:"food"},{n:"Groceries",c:"#2F8F55",i:"basket"},{n:"Transport",c:"#3B7DD8",i:"car"},
@@ -614,7 +613,6 @@ function go(t){
 }
 buildTabs();
 document.addEventListener("click",e=>{
-  if(e.target.closest("[data-account]")){$("acctBtn").click();return}
   const g=e.target.closest("[data-goto]"); if(g){go(g.dataset.goto);return}
   if(e.target.closest("[data-add]")){openSheet();return}
   if(e.target.closest("[data-sample]")){addSamples();return}
@@ -625,7 +623,7 @@ function renderProfile(){
   const p=settings.profile||{};
   const fields=[["name","Full name","text","name",80],["email","Email address","email","email",120],["phone","Phone number","tel","tel",30],["city","City","text","address-level2",80],["occupation","Occupation","text","organization-title",80]];
   const initials=(p.name||"Your profile").trim().split(/\s+/).slice(0,2).map(n=>n[0]).join("").toUpperCase();
-  $("profileContent").innerHTML=`<div class="profile-grid"><aside class="card profile-summary"><div class="profile-avatar" aria-hidden="true">${esc(initials)}</div><h2>${esc(p.name||"Your profile")}</h2><p>${esc(p.occupation||"Make Galla feel like yours.")}</p><p class="note">${esc(p.city||"")}</p><button class="ghost" data-account>${svg("lock")}Manage PIN lock</button></aside><div class="card"><h2>Personal details</h2><p class="note">All fields are optional. On this website, your details are saved only in this browser; they are not a sign-in account.</p><form id="profileForm"><div class="profile-fields">${fields.map(([k,l,t,a,m])=>`<label class="fl">${l}<input name="${k}" type="${t}" autocomplete="${a}" maxlength="${m}" value="${esc(p[k]||"")}"></label>`).join("")}</div><div class="profile-actions"><button class="primary" type="submit">Save profile</button><span id="profileStatus" role="status" aria-live="polite"></span></div></form></div></div>`;
+  $("profileContent").innerHTML=`<div class="profile-grid"><aside class="card profile-summary"><div class="profile-avatar" aria-hidden="true">${esc(initials)}</div><h2>${esc(p.name||"Your profile")}</h2><p>${esc(p.occupation||"Make Galla feel like yours.")}</p><p class="note">${esc(p.city||"")}</p></aside><div class="card"><h2>Personal details</h2><p class="note">All fields are optional. On this website, your details are saved only in this browser; they are not a sign-in account.</p><form id="profileForm"><div class="profile-fields">${fields.map(([k,l,t,a,m])=>`<label class="fl">${l}<input name="${k}" type="${t}" autocomplete="${a}" maxlength="${m}" value="${esc(p[k]||"")}"></label>`).join("")}</div><div class="profile-actions"><button class="primary" type="submit">Save profile</button><span id="profileStatus" role="status" aria-live="polite"></span></div></form></div></div>`;
   $("profileForm").onsubmit=async e=>{
     e.preventDefault(); if(!store||!ready.settings){toast("Your ledger is still loading. Try again shortly.");return}
     const button=e.currentTarget.querySelector('[type="submit"]');button.disabled=true;
@@ -1128,8 +1126,7 @@ function histFor(pred){return txns.filter(pred).sort((a,c)=>c.date.localeCompare
 
 function renderDetail(){
   const st=detailState, el=$("detail"); if(!st) return;
-  if(st.kind==="account"){renderAccount(el)}
-  else if(st.kind==="newFriend"){
+  if(st.kind==="newFriend"){
     el.innerHTML=`<div class="sheet-h"><h2>Add friend</h2>${closeBtn}</div><form id="dForm" style="display:grid;gap:12px">
       <label class="fl">Name<input id="dName" maxlength="40" required placeholder="Rahul Sharma"></label>
       <label class="fl">UPI ID (optional)<input id="dUpi" maxlength="60" placeholder="name@okaxis"></label>
@@ -1219,117 +1216,6 @@ function renderDetail(){
 }
 
 
-// ---------- account & PIN lock ----------
-const me={name:""};
-const firstName=()=>(me.name||"").trim().split(/\s+/)[0]||"";
-function meAvatar(size=""){
-  const n=me.name.trim(); const ini=n?n.split(/\s+/).map(w=>w[0]).slice(0,2).join("").toUpperCase():"";
-  return ini?`<span class="av ${size}" style="background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent)">${esc(ini)}</span>`
-    :`<span class="av ${size}" style="background:color-mix(in srgb,var(--accent) 16%,var(--surface));color:var(--accent)">${svg("users")}</span>`;
-}
-function showAccount(){$("acctAv").innerHTML=meAvatar();$("acctName").textContent=firstName()||"Account"}
-showAccount();
-
-async function hashPin(pin,salt){
-  const txt=salt+":"+pin;
-  try{const buf=await crypto.subtle.digest("SHA-256",new TextEncoder().encode(txt));return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("")}
-  catch{let h1=0x811c9dc5,h2=0x1000193;for(const c of txt){h1=Math.imul(h1^c.charCodeAt(0),16777619)>>>0;h2=Math.imul(h2+c.charCodeAt(0),2654435761)>>>0}return "f"+h1.toString(16)+h2.toString(16)}
-}
-const hasPin=()=>!!settings.pinHash;
-let lockState={open:true,entry:"",fails:0,until:0,forgot:false}, hiddenAt=0;
-
-function decideLock(){ if(hasPin()) showLock(); else hideLock(); }
-function hideLock(){lockState.open=false;$("lock").hidden=true;document.body.style.overflow=""}
-function showLock(){
-  if(!hasPin()){hideLock();return}
-  lockState={...lockState,open:true,entry:"",forgot:false};
-  closeSheet(); closeDetail();
-  $("lock").hidden=false; document.body.style.overflow="hidden"; renderLock();
-}
-function renderLock(msg=""){
-  const L=lockState, box=$("lockBox");
-  if(L.forgot){
-    box.innerHTML=`${meAvatar("lg")}<h1>Reset PIN?</h1><p>This removes the PIN lock. Your entries stay as they are. You can set a new PIN from the account menu.</p>
-      <div style="display:flex;gap:10px;flex-wrap:wrap;justify-content:center"><button class="ghost" id="lkBack">Back</button><button class="primary" id="lkReset">Remove PIN</button></div>`;
-    $("lkBack").onclick=()=>{L.forgot=false;renderLock()};
-    $("lkReset").onclick=async()=>{settings={...settings,pinHash:"",pinSalt:""};hideLock();render();await saveSettings("PIN removed")};
-    return;
-  }
-  const wait=Math.ceil((L.until-Date.now())/1000);
-  box.innerHTML=`<div class="lock-brand"><span class="logo">${logo()}</span>Galla</div>${meAvatar("lg")}<div><h1>${firstName()?`Hi ${esc(firstName())}`:"Welcome back"}</h1><p>Enter your PIN to open Galla</p></div>
-    <div class="dots" id="lkDots">${[0,1,2,3].map(i=>`<i class="${i<L.entry.length?"on":""}"></i>`).join("")}</div>
-    <div class="lock-msg" id="lkMsg" role="alert">${wait>0?`Too many tries. Try again in ${wait}s.`:esc(msg)}</div>
-    <div class="keypad">${[1,2,3,4,5,6,7,8,9].map(n=>`<button data-k="${n}" aria-label="${n}">${n}</button>`).join("")}<button class="blank" tabindex="-1" aria-hidden="true"></button><button data-k="0" aria-label="0">0</button><button class="bk" data-k="del" aria-label="Delete last digit">Delete</button></div>
-    <button class="linkbtn" id="lkForgot">Forgot PIN?</button>`;
-  box.querySelectorAll("[data-k]").forEach(b=>b.onclick=()=>pressKey(b.dataset.k));
-  $("lkForgot").onclick=()=>{L.forgot=true;renderLock()};
-  if(wait>0){clearTimeout(renderLock._t);renderLock._t=setTimeout(()=>{if(L.open)renderLock()},1000)}
-}
-async function pressKey(k){
-  const L=lockState; if(!L.open||L.forgot||Date.now()<L.until) return;
-  if(k==="del"){L.entry=L.entry.slice(0,-1);renderLock();return}
-  if(L.entry.length>=4) return;
-  L.entry+=k; renderLock();
-  if(L.entry.length<4) return;
-  const ok=(await hashPin(L.entry,settings.pinSalt))===settings.pinHash;
-  if(ok){L.fails=0;L.entry="";hideLock();render();return}
-  L.fails++; L.entry="";
-  if(L.fails>=5){L.until=Date.now()+30000;L.fails=0}
-  renderLock("Wrong PIN. Try again.");
-  const d=$("lkDots"); d.classList.add("err");
-}
-document.addEventListener("keydown",e=>{
-  if(!lockState.open||$("lock").hidden) return;
-  if(/^[0-9]$/.test(e.key)){e.preventDefault();pressKey(e.key)} else if(e.key==="Backspace"){e.preventDefault();pressKey("del")}
-});
-document.addEventListener("visibilitychange",()=>{
-  if(document.hidden){hiddenAt=Date.now();return}
-  const mins=settings.autoLock??1;
-  if(hasPin()&&!lockState.open&&mins>=0&&hiddenAt&&Date.now()-hiddenAt>=mins*60000) showLock();
-});
-$("acctBtn").onclick=()=>openDetail({kind:"account"});
-
-function renderAccount(el){
-  const online=!$("status").textContent.includes("this browser only");
-  const opt=(v,l)=>`<option value="${v}" ${(settings.autoLock??1)===v?"selected":""}>${l}</option>`;
-  el.innerHTML=`<div class="sheet-h"><div class="dhead">${meAvatar("lg")}<div class="t"><h2>${esc(me.name||"Your account")}</h2><div class="dstatus">${online?"Signed in with claude.ai · entries private to you":"Not signed in · saved in this browser only"}</div></div></div>${closeBtn}</div>
-    <div class="dsec"><h3>PIN lock</h3>
-      ${hasPin()?`<p class="note" style="margin:0">PIN lock is on. The app asks for your PIN when it opens.</p>
-        <label class="fl">Lock again after it's been in the background for<select id="aAuto">${opt(0,"Right away")}${opt(1,"1 minute")}${opt(5,"5 minutes")}${opt(15,"15 minutes")}${opt(-1,"Only when reopened")}</select></label>
-        <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="primary" id="aLockNow">${svg("lock")}Lock now</button><button class="ghost" id="aChange">Change PIN</button><button class="ghost" id="aRemove" style="color:var(--danger)">Turn off PIN</button></div>`
-      :`<p class="note" style="margin:0">Add a 4-digit PIN so anyone holding your unlocked phone can't open your ledger.</p>`}
-      <form id="aPinForm" ${hasPin()?"hidden":""} style="display:grid;gap:10px">
-        ${hasPin()?`<label class="fl">Current PIN<input id="aCur" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" style="letter-spacing:.4em;text-align:center"></label>`:""}
-        <div class="pinrow"><label class="fl">New PIN<input id="aPin1" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required></label><label class="fl">Repeat PIN<input id="aPin2" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="new-password" required></label></div>
-        <div class="remain bad" id="aErr" role="alert"></div>
-        <div class="sheet-actions"><button class="primary" type="submit">${hasPin()?"Save new PIN":"Turn on PIN lock"}</button></div>
-      </form>
-      <form id="aOffForm" hidden style="display:grid;gap:10px">
-        <label class="fl">Enter your current PIN to turn it off<input id="aOffPin" type="password" inputmode="numeric" pattern="[0-9]{4}" maxlength="4" autocomplete="off" style="letter-spacing:.4em;text-align:center"></label>
-        <div class="remain bad" id="aOffErr" role="alert"></div>
-        <div class="sheet-actions"><button class="dangerbtn" type="submit" style="flex:1">Turn off PIN lock</button></div>
-      </form>
-    </div>
-    <div class="dsec"><p class="note" style="margin:0">The PIN is a privacy lock on this app. Your ledger itself is protected by your claude.ai sign-in, and only your account can read it.</p></div>`;
-  const auto=$("aAuto"); if(auto) auto.onchange=()=>{settings={...settings,autoLock:+auto.value};saveSettings("Auto-lock updated")};
-  const ln=$("aLockNow"); if(ln) ln.onclick=()=>showLock();
-  const ch=$("aChange"); if(ch) ch.onclick=()=>{$("aPinForm").hidden=false;$("aOffForm").hidden=true;$("aCur").focus()};
-  const rm=$("aRemove"); if(rm) rm.onclick=()=>{$("aOffForm").hidden=false;$("aPinForm").hidden=true;$("aOffPin").focus()};
-  $("aPinForm").onsubmit=async e=>{
-    e.preventDefault(); const err=$("aErr"); const p1=$("aPin1").value, p2=$("aPin2").value;
-    if(hasPin()&&(await hashPin($("aCur").value,settings.pinSalt))!==settings.pinHash){err.textContent="Current PIN is wrong.";return}
-    if(!/^[0-9]{4}$/.test(p1)){err.textContent="Use exactly 4 digits.";return}
-    if(p1!==p2){err.textContent="The two PINs don't match.";return}
-    const salt=newId("s"); const had=hasPin();
-    settings={...settings,pinSalt:salt,pinHash:await hashPin(p1,salt),autoLock:settings.autoLock??1};
-    await saveSettings(had?"PIN changed":"PIN lock is on"); renderDetail();
-  };
-  $("aOffForm").onsubmit=async e=>{
-    e.preventDefault();
-    if((await hashPin($("aOffPin").value,settings.pinSalt))!==settings.pinHash){$("aOffErr").textContent="That PIN is wrong.";return}
-    settings={...settings,pinHash:"",pinSalt:""}; await saveSettings("PIN lock turned off"); renderDetail();
-  };
-}
 // ---------- filters & nav ----------
 $("search").oninput=()=>{filt.q=$("search").value.trim();renderTx()};
 $("catFilter").onchange=()=>{filt.cat=$("catFilter").value;renderTx()};
@@ -1390,7 +1276,7 @@ $("exportBtn").onclick=async()=>{
 function localStore(){
   const K="kharcha-ledger-v2"; let d={};
   try{d=JSON.parse(localStorage.getItem(K))||JSON.parse(localStorage.getItem("kharcha-ledger-v1"))||{}}catch{}
-  txns=d.txns||d.expenses||[]; rules=d.rules||[]; people=d.people||[]; groups=d.groups||[]; settings={budget:d.budget||0,catBudgets:{},pinHash:"",pinSalt:"",autoLock:1,...(d.settings||{})};
+  txns=d.txns||d.expenses||[]; rules=d.rules||[]; people=d.people||[]; groups=d.groups||[]; settings={budget:d.budget||0,catBudgets:{},...(d.settings||{})};
   const p=async()=>{try{localStorage.setItem(K,JSON.stringify({txns,rules,people,groups,settings}))}catch(e){throw e}};
   return {saveTxn:p,removeTxn:p,saveRule:p,removeRule:p,saveSettings:p,savePerson:p,removePerson:p,saveGroup:p,removeGroup:p};
 }
@@ -1400,13 +1286,11 @@ render();
   let db=null,uid=null;
   try{
     db=await claude.use("db"); const user=await claude.use("user"); uid=user?await user.id():null;
-    if(user){try{const m=await user.me();me.name=(m&&m.name)||""}catch{}}
-    showAccount();
     downloads=await claude.use("downloads")||browserDownloads;
   }catch{}
   $("exportBtn").hidden=!downloads;
   if(!db||!uid){
-    store=localStore(); ready={txns:true,rules:true,settings:true}; materialize(); render(); decideLock();
+    store=localStore(); ready={txns:true,rules:true,settings:true}; materialize(); render();
     $("status").textContent="Saved in this browser only. Export CSV for a backup. Data stays on this device.";
     return;
   }
@@ -1417,7 +1301,7 @@ render();
   store={
     saveTxn:t=>col.doc(t.id).set(strip(t)), removeTxn:id=>col.doc(id).delete(),
     saveRule:r=>rcol.doc(r.id).set(strip(r)), removeRule:id=>rcol.doc(id).delete(),
-    saveSettings:s=>sdoc.set({budget:s.budget||0,catBudgets:s.catBudgets||{},pinHash:s.pinHash||"",pinSalt:s.pinSalt||"",autoLock:s.autoLock??1,profile:s.profile||{}}),
+    saveSettings:s=>sdoc.set({budget:s.budget||0,catBudgets:s.catBudgets||{},profile:s.profile||{}}),
     savePerson:x=>pcol.doc(x.id).set(strip(x)), removePerson:id=>pcol.doc(id).delete(),
     saveGroup:x=>gcol.doc(x.id).set(strip(x)), removeGroup:id=>gcol.doc(id).delete()
   };
@@ -1435,10 +1319,10 @@ const lost=()=>{$("status").textContent="Lost connection to your saved ledger. R
     render();
   },lost);
   sdoc.onSnapshot(s=>{
-    if(s.exists){const d=s.data();settings={budget:d.budget||0,catBudgets:d.catBudgets||{},pinHash:d.pinHash||"",pinSalt:d.pinSalt||"",autoLock:d.autoLock??1,profile:d.profile||{}}}
-    if(!ready.settings&&!s.metadata.fromCache){ready.settings=true;decideLock()}
+    if(s.exists){const d=s.data();settings={budget:d.budget||0,catBudgets:d.catBudgets||{},profile:d.profile||{}}}
+    if(!ready.settings&&!s.metadata.fromCache){ready.settings=true;}
     render();
-  },()=>{ready.settings=true;decideLock()});
+  },()=>{ready.settings=true;});
 })();
 </script>
 
