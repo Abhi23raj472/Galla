@@ -460,6 +460,7 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
     </section>
 
     <!-- RECURRING -->
+    <section class="panel" data-panel="profile" hidden><div id="profileContent"></div></section>
     <section class="panel" data-panel="recurring" hidden>
       <section class="card">
         <div class="card-h"><h2>Recurring every month</h2><button class="primary" id="addRule"><svg class="i" data-i="plus"></svg>New</button></div>
@@ -572,7 +573,7 @@ const INC=[
 ];
 const cat=n=>[...EXP,...INC].find(x=>x.n===n)||{n,c:"#7C8B87",i:"dots"};
 const catIcon=(n,cls="cat-ic")=>{const c=cat(n);return `<span class="${cls}" style="background:color-mix(in srgb,${c.c} 16%,transparent);color:${c.c}">${svg(c.i)}</span>`};
-const TABS=[["overview","Overview","grid"],["transactions","Entries","list"],["split","Split","users"],["budgets","Budgets","target"],["recurring","Recurring","repeat"]];
+const TABS=[["overview","Overview","grid"],["transactions","Entries","list"],["split","Split","users"],["budgets","Budgets","target"],["recurring","Recurring","repeat"],["profile","Profile","users"]];
 
 const inr=new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0});
 const inr2=new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",minimumFractionDigits:0,maximumFractionDigits:2});
@@ -619,6 +620,22 @@ document.addEventListener("click",e=>{
   if(e.target.closest("[data-sample]")){addSamples();return}
 });
 
+// ---------- profile ----------
+function renderProfile(){
+  const p=settings.profile||{};
+  const fields=[["name","Full name","text","name",80],["email","Email address","email","email",120],["phone","Phone number","tel","tel",30],["city","City","text","address-level2",80],["occupation","Occupation","text","organization-title",80]];
+  const initials=(p.name||"Your profile").trim().split(/\s+/).slice(0,2).map(n=>n[0]).join("").toUpperCase();
+  $("profileContent").innerHTML=`<div class="profile-grid"><aside class="card profile-summary"><div class="profile-avatar" aria-hidden="true">${esc(initials)}</div><h2>${esc(p.name||"Your profile")}</h2><p>${esc(p.occupation||"Make Galla feel like yours.")}</p><p class="note">${esc(p.city||"")}</p><button class="ghost" data-account>${svg("lock")}Manage PIN lock</button></aside><div class="card"><h2>Personal details</h2><p class="note">All fields are optional. On this website, your details are saved only in this browser; they are not a sign-in account.</p><form id="profileForm"><div class="profile-fields">${fields.map(([k,l,t,a,m])=>`<label class="fl">${l}<input name="${k}" type="${t}" autocomplete="${a}" maxlength="${m}" value="${esc(p[k]||"")}"></label>`).join("")}</div><div class="profile-actions"><button class="primary" type="submit">Save profile</button><span id="profileStatus" role="status" aria-live="polite"></span></div></form></div></div>`;
+  $("profileForm").onsubmit=async e=>{
+    e.preventDefault(); if(!store||!ready.settings){toast("Your ledger is still loading. Try again shortly.");return}
+    const button=e.currentTarget.querySelector('[type="submit"]');button.disabled=true;
+    const profile=Object.fromEntries(fields.map(([k])=>[k,e.currentTarget.elements.namedItem(k).value.trim()]));
+    const previous=settings;settings={...settings,profile};
+    try{await store.saveSettings(settings);renderProfile();$("profileStatus").textContent="Profile saved";toast("Profile saved")}
+    catch(error){settings=previous;button.disabled=false;$("profileStatus").textContent="Could not save. Please try again.";saveErr(error)}
+  };
+}
+
 // ---------- derived ----------
 const inMonth=k=>txns.filter(t=>mKey(t.date)===k);
 const sum=(arr,type)=>arr.filter(t=>typeOf(t)===type).reduce((s,t)=>s+t.amount,0);
@@ -627,17 +644,18 @@ const sum=(arr,type)=>arr.filter(t=>typeOf(t)===type).reduce((s,t)=>s+t.amount,0
 function render(){
   const section=TABS.find(x=>x[0]===tab);
   $("pageTitle").textContent=section?section[1]:"Overview";
-  const subtitles={overview:"A little clarity for your everyday money.",transactions:"Every entry, organized and easy to find.",split:"Shared expenses. Clear balances. Happier friends.",budgets:"Give every rupee a little direction.",recurring:"Set it once. Keep life moving."};
+  const subtitles={overview:"A little clarity for your everyday money.",transactions:"Every entry, organized and easy to find.",split:"Shared expenses. Clear balances. Happier friends.",budgets:"Give every rupee a little direction.",recurring:"Set it once. Keep life moving.",profile:"Your details, all in one place."};
   $("pageSubtitle").textContent=subtitles[tab];
   const isNow=cur===todayISO().slice(0,7);
   $("monthLabel").textContent=mName(cur);
   $("thisMonth").hidden=isNow;
-  $("monthBar").hidden=tab==="split";
+  $("monthBar").hidden=tab==="split"||tab==="profile";
   if(tab==="overview") renderOverview();
   if(tab==="transactions") renderTx();
   if(tab==="budgets") renderBudgets();
   if(tab==="recurring") renderRules();
   if(tab==="split") renderSplit();
+  if(tab==="profile"&&!$("profileContent").contains(document.activeElement)) renderProfile();
   if(!$("scrim2").hidden&&!$("detail").contains(document.activeElement)) renderDetail();
 }
 
@@ -1373,7 +1391,7 @@ function localStore(){
   const K="kharcha-ledger-v2"; let d={};
   try{d=JSON.parse(localStorage.getItem(K))||JSON.parse(localStorage.getItem("kharcha-ledger-v1"))||{}}catch{}
   txns=d.txns||d.expenses||[]; rules=d.rules||[]; people=d.people||[]; groups=d.groups||[]; settings={budget:d.budget||0,catBudgets:{},pinHash:"",pinSalt:"",autoLock:1,...(d.settings||{})};
-  const p=async()=>{try{localStorage.setItem(K,JSON.stringify({txns,rules,people,groups,settings}))}catch{}};
+  const p=async()=>{try{localStorage.setItem(K,JSON.stringify({txns,rules,people,groups,settings}))}catch(e){throw e}};
   return {saveTxn:p,removeTxn:p,saveRule:p,removeRule:p,saveSettings:p,savePerson:p,removePerson:p,saveGroup:p,removeGroup:p};
 }
 
@@ -1399,7 +1417,7 @@ render();
   store={
     saveTxn:t=>col.doc(t.id).set(strip(t)), removeTxn:id=>col.doc(id).delete(),
     saveRule:r=>rcol.doc(r.id).set(strip(r)), removeRule:id=>rcol.doc(id).delete(),
-    saveSettings:s=>sdoc.set({budget:s.budget||0,catBudgets:s.catBudgets||{},pinHash:s.pinHash||"",pinSalt:s.pinSalt||"",autoLock:s.autoLock??1}),
+    saveSettings:s=>sdoc.set({budget:s.budget||0,catBudgets:s.catBudgets||{},pinHash:s.pinHash||"",pinSalt:s.pinSalt||"",autoLock:s.autoLock??1,profile:s.profile||{}}),
     savePerson:x=>pcol.doc(x.id).set(strip(x)), removePerson:id=>pcol.doc(id).delete(),
     saveGroup:x=>gcol.doc(x.id).set(strip(x)), removeGroup:id=>gcol.doc(id).delete()
   };
@@ -1417,7 +1435,7 @@ const lost=()=>{$("status").textContent="Lost connection to your saved ledger. R
     render();
   },lost);
   sdoc.onSnapshot(s=>{
-    if(s.exists){const d=s.data();settings={budget:d.budget||0,catBudgets:d.catBudgets||{},pinHash:d.pinHash||"",pinSalt:d.pinSalt||"",autoLock:d.autoLock??1}}
+    if(s.exists){const d=s.data();settings={budget:d.budget||0,catBudgets:d.catBudgets||{},pinHash:d.pinHash||"",pinSalt:d.pinSalt||"",autoLock:d.autoLock??1,profile:d.profile||{}}}
     if(!ready.settings&&!s.metadata.fromCache){ready.settings=true;decideLock()}
     render();
   },()=>{ready.settings=true;decideLock()});
