@@ -1,0 +1,24 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 48 48" width="512" height="512" role="img" aria-label="Galla">
+  <defs>
+    <linearGradient id="gBg" x1="4" y1="2" x2="44" y2="46" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#3B6BFF"/>
+      <stop offset=".55" stop-color="#2F5BEA"/>
+      <stop offset="1" stop-color="#14B87A"/>
+    </linearGradient>
+    <linearGradient id="gCoin" x1="17" y1="8" x2="31" y2="24" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#FFD866"/>
+      <stop offset="1" stop-color="#F5A524"/>
+    </linearGradient>
+  </defs>
+  <rect width="48" height="48" rx="13" fill="url(#gBg)"/>
+  <circle cx="38" cy="9" r="14" fill="#FFFFFF" opacity=".08"/>
+  <!-- coin dropping into the slot -->
+  <circle cx="24" cy="16.5" r="7.6" fill="url(#gCoin)"/>
+  <circle cx="24" cy="16.5" r="5.9" fill="none" stroke="#FFF3C4" stroke-width=".8" opacity=".8"/>
+  <path d="M21.3 12.9h5.4M21.3 15h5.4M22.3 12.9c2.9 0 2.9 4.3 0 4.3h-1l3.9 3.3" fill="none" stroke="#8A5300" stroke-width="1.35" stroke-linecap="round" stroke-linejoin="round"/>
+  <!-- the galla: cash drawer -->
+  <rect x="9.5" y="21.5" width="29" height="17" rx="4.5" fill="#FFFFFF"/>
+  <rect x="16.5" y="20.3" width="15" height="3" rx="1.5" fill="#173A9E"/>
+  <path d="M9.5 28.4h29" stroke="#DCE6FF" stroke-width="1.2"/>
+  <rect x="19.5" y="31.4" width="9" height="3" rx="1.5" fill="#2F5BEA"/>
+</svg>
