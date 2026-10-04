@@ -352,7 +352,7 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
       <div class="brand"><span class="logo" id="brandLogo"></span><div><span class="mobile-brand-name">Galla</span><div class="tagline">Spend · Split · Settle</div></div></div>
 
       <div class="top-actions">
-        
+
         <button class="iconbtn" id="exportBtn" hidden title="Export all entries as CSV" aria-label="Export CSV"><svg class="i" data-i="download"></svg><span>CSV</span></button>
         <button class="primary desk" id="addBtnDesk"><svg class="i" data-i="plus"></svg>Add entry</button>
       </div>
@@ -371,7 +371,7 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
     <!-- OVERVIEW -->
     <section class="panel" data-panel="overview">
       <div class="card welcome" id="welcome" hidden>
-        <div><h2>Start your ledger</h2><p>Log what you spend and earn, set a monthly budget, and add rent or SIPs once as recurring entries. Your entries are saved privately in this browser.</p></div>
+        <div><h2>Start your ledger</h2><p>Log what you spend and earn, set a monthly budget, and add rent or SIPs once as recurring entries. Your entries are saved privately in this browser.</p><ol class="setup-list"><li>Add your first entry</li><li><button class="linkbtn" data-goto="budgets">Set your monthly budget</button></li><li><button class="linkbtn" data-goto="profile">Download a full backup regularly</button></li></ol></div>
         <div class="btns"><button class="primary" data-add>Add first entry</button><button class="ghost" data-sample>Try sample data</button></div>
       </div>
 
@@ -413,7 +413,7 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
           </div>
           <select class="sel" id="catFilter" aria-label="Filter by category"><option value="">All categories</option></select>
         </div>
-        <div id="dayChip"></div>
+        <details class="entry-options"><summary>Date range &amp; sorting</summary><div class="range-filters"><label class="fl">From<input type="date" id="filterFrom"></label><label class="fl">To<input type="date" id="filterTo"></label><label class="fl">Sort entries<select id="entrySort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="largest">Largest amount</option><option value="smallest">Smallest amount</option></select></label></div><p class="note">A date range searches across months.</p></details><p id="rangeStatus" role="status"></p><div id="recurringFilter" hidden><span class="chip">Generated recurring entries <button id="clearRecurring" aria-label="Show all entries">×</button></span></div><div id="dayChip"></div>
         <div class="filter-sum" id="filterSum"></div>
         <div id="list"></div>
         <div id="sampleRemove" hidden style="margin-top:14px;text-align:center"><button class="linkbtn" id="removeSamples">Remove all sample entries</button></div>
@@ -421,7 +421,7 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
     </section>
 
     <!-- SPLIT -->
-    <section class="panel" data-panel="split" hidden>
+    <section class="panel" data-panel="split" hidden><p class="card split-guide">Start with <button class="linkbtn" id="guideFriend">a friend</button>, optionally <button class="linkbtn" id="guideGroup">create a group</button>, then <button class="linkbtn" id="guideExpense">add a shared expense</button>. Recording a settlement does not send money.</p>
       <div class="hero">
         <div><div class="lbl">Across all friends, you are</div><div class="big" id="sNet" style="font-size:clamp(30px,7vw,44px)">all settled up</div></div>
         <div class="hero-stats" style="grid-template-columns:repeat(2,1fr)">
@@ -448,14 +448,14 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
       <section class="card">
         <div class="card-h"><h2>Monthly budget</h2><span class="sub">Applies to every month</span></div>
         <div class="overall">
-          <label class="limit" for="overallBudget">₹ <input id="overallBudget" type="number" min="0" step="500" inputmode="numeric" placeholder="40000"></label>
+          <label class="limit" for="overallBudget">₹ <input id="overallBudget" type="number" min="0" step="500" inputmode="numeric" placeholder="No budget" aria-label="Monthly budget for every month"></label>
           <span class="note" id="overallNote" style="margin:0"></span>
         </div>
       </section>
       <section class="card">
         <div class="card-h"><h2>Category limits</h2><span class="sub" id="budMonth"></span></div>
-        <p class="note">Set a limit for the categories you want to watch. Leave the rest blank.</p>
-        <div id="budList"></div>
+        <p class="note">Limits apply to every month. The selected month changes spending totals only. Changes save when you leave a field; leave a limit blank to remove it.</p>
+        <p id="budgetStatus" role="status" aria-live="polite">All changes saved</p><div id="budList"></div>
       </section>
     </section>
 
@@ -464,8 +464,8 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
     <section class="panel" data-panel="recurring" hidden>
       <section class="card">
         <div class="card-h"><h2>Recurring every month</h2><button class="primary" id="addRule"><svg class="i" data-i="plus"></svg>New</button></div>
-        <p class="note">Rent, salary, SIPs, subscriptions and EMIs. Each one is logged automatically on its day, every month. Pause one to stop it without losing it.</p>
-        <div id="rules"></div>
+        <p class="note">Rent, salary, SIPs, subscriptions and EMIs. Due entries are added when you open Galla, including missed months from the last 12 months. No payment is made. Pause a rule to stop future entries. Review generated entries below.</p>
+        <div id="recurringStatus" role="status" aria-live="polite"></div><button class="ghost" id="reviewRecurring">Review generated entries</button><div id="rules"></div>
       </section>
     </section>
   </main>
@@ -503,13 +503,13 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
           <div class="remain" id="remain"></div>
         </div>
       </div>
-      <div class="row2">
+      <details class="entry-options" id="entryOptions"><summary>Payment, date &amp; repeat options</summary><div class="row2">
         <label class="fl">Paid via<select id="fPay"><option>UPI</option><option>Card</option><option>Cash</option><option>Net banking</option><option>Auto-debit</option></select></label>
         <label class="fl">Date<input id="fDate" type="date" required></label>
       </div>
-      <label class="check" id="repeatWrap"><input type="checkbox" id="fRepeat"><span>Repeat every month<small id="repeatHint">Logged automatically on this day each month</small></span></label>
-      <div class="sheet-actions"><button type="button" class="dangerbtn" id="deleteBtn" hidden>Delete</button><button class="primary" id="submitBtn" type="submit">Add expense</button></div>
-    </form>
+      <label class="check" id="repeatWrap"><input type="checkbox" id="fRepeat"><span>Repeat every month<small id="repeatHint">Added when you open Galla after the due date</small></span></label>
+      </details>
+    </form><div class="entry-footer"><p id="entrySaveStatus" class="note" role="status" aria-live="polite"></p><div class="sheet-actions"><button type="button" class="dangerbtn" id="deleteBtn" hidden>Delete</button><button class="primary" id="submitBtn" type="submit" form="form">Add expense</button></div></div>
   </div>
 </div>
 <div class="scrim" id="scrim2" hidden>
@@ -574,7 +574,7 @@ const cat=n=>[...EXP,...INC].find(x=>x.n===n)||{n,c:"#7C8B87",i:"dots"};
 const catIcon=(n,cls="cat-ic")=>{const c=cat(n);return `<span class="${cls}" style="background:color-mix(in srgb,${c.c} 16%,transparent);color:${c.c}">${svg(c.i)}</span>`};
 const TABS=[["overview","Overview","grid"],["transactions","Entries","list"],["split","Split","users"],["budgets","Budgets","target"],["recurring","Recurring","repeat"],["profile","Profile","users"]];
 
-const inr=new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",maximumFractionDigits:0});
+const inr=new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",minimumFractionDigits:0,maximumFractionDigits:2});
 const inr2=new Intl.NumberFormat("en-IN",{style:"currency",currency:"INR",minimumFractionDigits:0,maximumFractionDigits:2});
 const $=id=>document.getElementById(id);
 const esc=s=>String(s??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
@@ -593,12 +593,13 @@ const compact=v=>v>=100000?(v/100000).toFixed(v>=1000000?0:1)+"L":v>=1000?(v/100
 let txns=[], rules=[], people=[], groups=[], settings={budget:0,catBudgets:{}};
 let sf={on:false,group:"",paidBy:"me",parts:new Set(["me"]),mode:"equal",vals:{}}, detailState=null;
 let cur=todayISO().slice(0,7), tab="overview";
-let filt={q:"",type:"",cat:"",day:""};
+let filt={q:"",type:"",cat:"",day:"",from:"",to:"",sort:"newest",recurring:false};
 let form={mode:"txn",id:null,type:"expense"};
+let entrySaving=false, recurringBusy=false;
 let store=null, ready={txns:false,rules:false,settings:false};
 
 function toast(msg){const t=$("toast");t.textContent=msg;t.classList.add("show");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("show"),2000)}
-const saveErr=e=>toast(e?.code==="quota_exceeded"?"Storage is full. Delete old entries to add more.":"Couldn't save. Check your connection.");
+const saveErr=e=>toast(e?.name==="QuotaExceededError"||e?.code==="quota_exceeded"?"Storage is full. Export a full backup before freeing space.":"Couldn't save. Check storage access or your connection, then retry.");
 
 // ---------- tabs ----------
 function buildTabs(){
@@ -621,18 +622,122 @@ document.addEventListener("click",e=>{
 // ---------- profile ----------
 function renderProfile(){
   const p=settings.profile||{};
-  const fields=[["name","Full name","text","name",80],["email","Email address","email","email",120],["phone","Phone number","tel","tel",30],["city","City","text","address-level2",80],["occupation","Occupation","text","organization-title",80]];
+  const fields=[["name","Display name","text","name",80]];
   const initials=(p.name||"Your profile").trim().split(/\s+/).slice(0,2).map(n=>n[0]).join("").toUpperCase();
-  $("profileContent").innerHTML=`<div class="profile-grid"><aside class="card profile-summary"><div class="profile-avatar" aria-hidden="true">${esc(initials)}</div><h2>${esc(p.name||"Your profile")}</h2><p>${esc(p.occupation||"Make Galla feel like yours.")}</p><p class="note">${esc(p.city||"")}</p></aside><div class="card"><h2>Personal details</h2><p class="note">All fields are optional. On this website, your details are saved only in this browser; they are not a sign-in account.</p><form id="profileForm"><div class="profile-fields">${fields.map(([k,l,t,a,m])=>`<label class="fl">${l}<input name="${k}" type="${t}" autocomplete="${a}" maxlength="${m}" value="${esc(p[k]||"")}"></label>`).join("")}</div><div class="profile-actions"><button class="primary" type="submit">Save profile</button><span id="profileStatus" role="status" aria-live="polite"></span></div></form></div></div>`;
+  $("profileContent").innerHTML=`<div class="profile-grid"><aside class="card profile-summary"><div class="profile-avatar" aria-hidden="true">${esc(initials)}</div><h2>${esc(p.name||"Your profile")}</h2><p>Your ledger is stored on this device. This profile is not a sign-in account.</p></aside><div class="card"><h2>Profile & preferences</h2><p class="note">Your display name personalizes the overview. Choose the payment method you use most often.</p><form id="profileForm"><div class="profile-fields">${fields.map(([k,l,t,a,m])=>`<label class="fl">${l}<input name="${k}" type="${t}" autocomplete="${a}" maxlength="${m}" value="${esc(p[k]||"")}"></label>`).join("")}<label class="fl">Default payment method<select name="defaultPay">${["UPI","Card","Cash","Net banking","Auto-debit"].map(v=>`<option ${v===(settings.preferences?.defaultPay||"UPI")?"selected":""}>${v}</option>`).join("")}</select></label></div><details class="optional-profile"><summary>Optional personal details</summary><p class="note">These details are kept for your reference only and are included in full backups. They do not enable syncing or contact anyone.</p><div class="profile-fields">${[["email","Email address","email"],["phone","Phone number","tel"],["city","City","text"],["occupation","Occupation","text"]].map(([k,l,t])=>`<label class="fl">${l}<input name="${k}" type="${t}" maxlength="120" value="${esc(p[k]||"")}"></label>`).join("")}</div></details><div class="profile-actions"><button class="primary" type="submit">Save profile</button><span id="profileStatus" role="status" aria-live="polite"></span></div></form></div></div><section class="card data-card"><h2>Backup & restore</h2><p class="note">Clearing browser data or changing devices can remove your ledger. Download a full backup to keep entries, friends, groups, recurring rules, budgets and profile together. Keep the file private: it contains your personal data.</p><div class="profile-actions"><button class="primary" id="backupBtn">Download full backup</button><label class="ghost file-label">Choose backup to restore<input id="restoreFile" type="file" accept="application/json,.json"></label></div><p id="backupStatus" role="status" aria-live="polite"></p><div id="restorePreview" hidden></div></section>`;
+  bindBackupControls();
   $("profileForm").onsubmit=async e=>{
     e.preventDefault(); if(!store||!ready.settings){toast("Your ledger is still loading. Try again shortly.");return}
     const button=e.currentTarget.querySelector('[type="submit"]');button.disabled=true;
-    const profile=Object.fromEntries(fields.map(([k])=>[k,e.currentTarget.elements.namedItem(k).value.trim()]));
-    const previous=settings;settings={...settings,profile};
+    const profile=Object.fromEntries(["name","email","phone","city","occupation"].map(k=>[k,e.currentTarget.elements.namedItem(k).value.trim()]));
+    const preferences={...(settings.preferences||{}),defaultPay:e.currentTarget.elements.namedItem("defaultPay").value};
+    const previous=settings;settings={...settings,profile,preferences};
     try{await store.saveSettings(settings);renderProfile();$("profileStatus").textContent="Profile saved";toast("Profile saved")}
     catch(error){settings=previous;button.disabled=false;$("profileStatus").textContent="Could not save. Please try again.";saveErr(error)}
   };
 }
+
+// ---------- dialog keyboard access ----------
+const modalOpeners=new Map();
+function updateModalBackground(){
+  const active=!$("scrim2").hidden?"scrim2":!$("scrim").hidden?"scrim":null;
+  document.querySelectorAll(".app,.sidebar,#bottomNav,#fab,.skip-link").forEach(el=>el.inert=!!active);
+  $("scrim").inert=active==="scrim2";
+}
+function activateModal(id){
+  if($(id).hidden)modalOpeners.set(id,document.activeElement);
+  $(id).hidden=false;updateModalBackground();
+  const dialog=$(id).querySelector('[role="dialog"]');dialog.tabIndex=-1;
+  requestAnimationFrame(()=>{if(!dialog.contains(document.activeElement))dialog.focus()});
+}
+function deactivateModal(id){
+  updateModalBackground();const opener=modalOpeners.get(id);modalOpeners.delete(id);
+  if(opener?.isConnected&&!opener.closest('[inert]'))opener.focus({preventScroll:true});
+}
+document.addEventListener("keydown",e=>{
+  if(e.key!=="Tab")return;
+  const root=!$("scrim2").hidden?$("scrim2"):!$("scrim").hidden?$("scrim"):null;if(!root)return;
+  const items=[...root.querySelectorAll('button,input,select,textarea,summary,a[href],[tabindex="0"]')].filter(el=>!el.disabled&&el.getClientRects().length&&!el.closest('[hidden],[inert]'));
+  if(!items.length){e.preventDefault();return}
+  const first=items[0],last=items.at(-1);
+  if(!root.contains(document.activeElement)){e.preventDefault();(e.shiftKey?last:first).focus()}
+  else if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus()}
+  else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus()}
+});
+
+// ---------- complete backups ----------
+const ledgerData=()=>({txns,rules,people,groups,settings});
+function backupDocument(){return {app:"Galla",version:1,exportedAt:new Date().toISOString(),data:JSON.parse(JSON.stringify(ledgerData()))}}
+function validateBackup(value){
+  const fail=()=>{throw new Error("This is not a valid Galla backup. No data was changed.")};
+  const obj=v=>v&&typeof v==="object"&&!Array.isArray(v);
+  const str=(v,max=200)=>typeof v==="string"&&v.length<=max;
+  const id=v=>str(v,100)&&/^[A-Za-z0-9_-]+$/.test(v);
+  const money=v=>typeof v==="number"&&Number.isFinite(v)&&v>=0&&v<=1e12&&Math.abs(v*100-Math.round(v*100))<.01;
+  const month=v=>str(v,7)&&/^\d{4}-(0[1-9]|1[0-2])$/.test(v)&&+v.slice(0,4)>=1900&&+v.slice(0,4)<=2200;
+  const date=v=>str(v,10)&&month(v.slice(0,7))&&/^\d{4}-\d{2}-\d{2}$/.test(v)&&+v.slice(8)>=1&&+v.slice(8)<=dim(v.slice(0,7));
+  if(!obj(value)||value.app!=="Galla"||value.version!==1||!obj(value.data))fail();
+  const d=JSON.parse(JSON.stringify(value.data));
+  for(const k of ["txns","rules","people","groups"]){
+    if(!Array.isArray(d[k])||d[k].length>20000)fail();const ids=new Set();
+    for(const v of d[k]){if(!obj(v)||!id(v.id)||ids.has(v.id))fail();ids.add(v.id)}
+  }
+  const persons=new Set(["me",...d.people.map(p=>p.id)]), groupIds=new Set(d.groups.map(g=>g.id));
+  for(const p of d.people)if(p.id==="me"||!str(p.name,80)||!p.name.trim()||(p.upi!==undefined&&!str(p.upi,120)))fail();
+  for(const g of d.groups)if(!str(g.name,100)||!g.name.trim()||!Array.isArray(g.members)||g.members.some(m=>!persons.has(m)))fail();
+  for(const r of d.rules)if(!money(r.amount)||!r.amount||!str(r.desc,80)||!str(r.cat,80)||!str(r.pay,40)||!["expense","income"].includes(r.type||"expense")||!month(r.start)||!Number.isInteger(r.day)||r.day<1||r.day>31||typeof r.active!=="boolean"||(r.skip!==undefined&&(!Array.isArray(r.skip)||r.skip.some(m=>!month(m)))))fail();
+  for(const t of d.txns){
+    if(!money(t.amount)||!date(t.date)||!str(t.desc,200)||!["expense","income","settle"].includes(t.type||"expense")||(t.created!==undefined&&(!Number.isFinite(t.created)||t.created<0)))fail();
+    if(t.type==="settle"){if(!id(t.from)||!id(t.to)||t.from===t.to||!t.amount)fail()}
+    else if(!str(t.cat,80)||!str(t.pay,40))fail();
+    if(t.group&&!groupIds.has(t.group))fail();
+    if(t.recurId&&!id(t.recurId))fail(); // deleted rules may retain historical entries
+    if(t.split){const sp=t.split;
+      if(!obj(sp)||!money(sp.total)||!sp.total||!id(sp.paidBy)||!obj(sp.shares)||!["equal","exact","pct"].includes(sp.mode)||(sp.group&&!groupIds.has(sp.group)))fail();
+      const shares=Object.entries(sp.shares);if(!shares.length||shares.some(([k,v])=>!id(k)||!money(v))||Math.abs(shares.reduce((n,[,v])=>n+v,0)-sp.total)>.011||Math.abs((sp.shares.me||0)-t.amount)>.011)fail();
+      if(sp.vals!==undefined&&(!obj(sp.vals)||Object.values(sp.vals).some(v=>!Number.isFinite(+v)||+v<0)))fail();
+    }
+  }
+  if(!obj(d.settings)||!money(d.settings.budget||0)||!obj(d.settings.catBudgets||{})||Object.entries(d.settings.catBudgets||{}).some(([k,v])=>!str(k,80)||!money(v)))fail();
+  if(d.settings.profile!==undefined&&(!obj(d.settings.profile)||Object.values(d.settings.profile).some(v=>!str(v,120))))fail();
+  if(d.settings.preferences!==undefined&&(!obj(d.settings.preferences)||(d.settings.preferences.defaultPay&&!['UPI','Card','Cash','Net banking','Auto-debit'].includes(d.settings.preferences.defaultPay))))fail();
+  return {txns:d.txns,rules:d.rules,people:d.people,groups:d.groups,settings:{budget:d.settings.budget||0,catBudgets:d.settings.catBudgets||{},profile:d.settings.profile||{},preferences:d.settings.preferences||{}}};
+}
+async function downloadBackup(){
+  if(!store||!Object.values(ready).every(Boolean))throw new Error("Wait for your ledger to finish loading.");
+  if(entrySaving||recurringBusy)throw new Error("Wait for pending saves to finish.");
+  await budgetQueue;
+  await downloads.save({filename:`galla-full-${todayISO()}.json`,data:JSON.stringify(backupDocument(),null,2)});
+}
+function bindBackupControls(){
+  const status=$("backupStatus"),preview=$("restorePreview");
+  $("backupBtn").onclick=async()=>{try{await downloadBackup();status.textContent="Full backup downloaded."}catch(e){status.textContent=e.message||"Backup could not be downloaded. Try again."}};
+  $("restoreFile").disabled=!store?.replaceLedger;
+  if(!store?.replaceLedger)status.textContent="Restore is available in browser storage mode. Account restoration is not supported here.";
+  $("restoreFile").onchange=async e=>{
+    preview.hidden=true;preview.replaceChildren();const file=e.target.files[0];if(!file)return;
+    try{
+      if(file.size>10*1024*1024)throw new Error("Choose a backup smaller than 10 MB.");
+      const data=validateBackup(JSON.parse(await file.text()));
+      preview.hidden=false;
+      preview.innerHTML=`<h3>Review before restoring</h3><p>${data.txns.length} entries · ${data.people.length} friends · ${data.groups.length} groups · ${data.rules.length} recurring rules</p><p>This replaces this browser's current ledger, budgets and profile. Download a backup of your current data first.</p><div class="profile-actions"><button class="ghost" id="backupBeforeRestore">Back up current data</button><button class="dangerbtn" id="confirmRestore">Replace ledger with this backup</button><button class="ghost" id="cancelRestore">Cancel</button></div>`;
+      status.textContent="Valid backup. Review the contents before replacing your ledger.";
+      $("backupBeforeRestore").onclick=()=>$("backupBtn").click();
+      $("cancelRestore").onclick=()=>{preview.hidden=true;preview.replaceChildren();$("restoreFile").value="";status.textContent="Restore cancelled."};
+      $("confirmRestore").onclick=async()=>{
+        const button=$("confirmRestore");button.disabled=true;
+        try{if(entrySaving||recurringBusy)throw new Error("Wait for pending saves to finish.");await budgetQueue;await store.replaceLedger(data);filt={q:"",type:"",cat:"",day:""};go("profile");renderProfile();$("backupStatus").textContent="Backup restored. Due recurring entries will be checked the next time you open Galla.";toast("Full backup restored")}
+        catch(e){button.disabled=false;status.textContent="Restore failed. Your current ledger was kept. Try again."}
+      };
+    }catch(e){status.textContent=e instanceof SyntaxError?"This file is not valid JSON. No data was changed.":e.message;$("restoreFile").value=""}
+  };
+}
+$("guideFriend").onclick=()=>$("newFriend").click();
+$("guideGroup").onclick=()=>$("newGroup").click();
+$("guideExpense").onclick=()=>$("addShared").click();
+$("reviewRecurring").onclick=()=>{filt={q:"",type:"",cat:"",day:"",recurring:true,sort:"newest",from:shiftM(todayISO().slice(0,7),-11)+"-01",to:todayISO()};go("transactions")};
+$("clearRecurring").onclick=()=>{filt.recurring=false;renderTx()};
+for(const [id,key] of [["filterFrom","from"],["filterTo","to"],["entrySort","sort"]])$(id).onchange=()=>{filt[key]=$(id).value;filt.day="";renderTx()};
 
 // ---------- derived ----------
 const inMonth=k=>txns.filter(t=>mKey(t.date)===k);
@@ -661,6 +766,8 @@ function renderOverview(){
   const today=todayISO(), isNow=cur===today.slice(0,7);
   const mt=inMonth(cur), inc=sum(mt,"income"), exp=sum(mt,"expense");
   $("welcome").hidden=txns.length>0||!ready.txns;
+  document.querySelector(".app").classList.toggle("empty-ledger",ready.txns&&!txns.length);
+  if(tab==="overview"&&settings.profile?.name)$("pageSubtitle").textContent=`${settings.profile.name}, here is your monthly money overview.`;
   const bal=inc-exp;
   if(inc>0){$("balLbl").textContent="Left this month";$("balance").textContent=(bal<0?"−":"")+inr.format(Math.abs(bal));$("balance").classList.toggle("neg",bal<0)}
   else{$("balLbl").textContent="Spent this month";$("balance").textContent=inr.format(exp);$("balance").classList.remove("neg")}
@@ -760,9 +867,12 @@ function bindTx(root){root.querySelectorAll(".tx").forEach(b=>b.onclick=()=>{con
 
 function syncSeg(){document.querySelectorAll("#typeSeg button").forEach(b=>b.setAttribute("aria-pressed",b.dataset.type===filt.type))}
 function renderTx(){
-  const mt=inMonth(cur), q=filt.q.toLowerCase();
-  const rows=mt.filter(t=>typeOf(t)!=="settle"&&(!filt.type||typeOf(t)===filt.type)&&(!filt.cat||t.cat===filt.cat)&&(!filt.day||t.date===filt.day)&&(!q||t.desc.toLowerCase().includes(q)||t.cat.toLowerCase().includes(q)))
-    .sort((a,b)=>b.date.localeCompare(a.date)||(b.created||0)-(a.created||0));
+  const mt=filt.from||filt.to?txns:inMonth(cur), q=filt.q.toLowerCase();
+  $("recurringFilter").hidden=!filt.recurring;
+  $("filterFrom").value=filt.from||"";$("filterTo").value=filt.to||"";$("entrySort").value=filt.sort||"newest";
+  $("rangeStatus").textContent=filt.from&&filt.to&&filt.from>filt.to?"Choose an end date on or after the start date.":"";
+  const rows=mt.filter(t=>typeOf(t)!=="settle"&&(!filt.type||typeOf(t)===filt.type)&&(!filt.cat||t.cat===filt.cat)&&(!filt.day||t.date===filt.day)&&(!filt.from||t.date>=filt.from)&&(!filt.to||t.date<=filt.to)&&(!filt.recurring||t.recurId)&&(!q||t.desc.toLowerCase().includes(q)||t.cat.toLowerCase().includes(q)))
+    .sort((a,b)=>filt.sort==="largest"?b.amount-a.amount:filt.sort==="smallest"?a.amount-b.amount:filt.sort==="oldest"?a.date.localeCompare(b.date):b.date.localeCompare(a.date)||(b.created||0)-(a.created||0));
   $("dayChip").innerHTML=filt.day?`<div style="margin-top:12px"><span class="chip">${dName(filt.day,{weekday:"long",day:"numeric",month:"long"})}<button id="clearDay" aria-label="Show all days">${svg("x")}</button></span></div>`:"";
   if(filt.day) $("clearDay").onclick=()=>{filt.day="";renderTx()};
   const fi=sum(rows,"income"), fe=sum(rows,"expense");
@@ -773,7 +883,7 @@ function renderTx(){
       :`<div class="empty"><strong>Nothing logged for ${mName(cur)}</strong>Add an entry with the + button.<div class="btns"><button class="primary" data-add>Add entry</button>${txns.length?"":'<button class="ghost" data-sample>Try sample data</button>'}</div></div>`;
   } else {
     const g={}; rows.forEach(t=>(g[t.date]??=[]).push(t));
-    list.innerHTML=Object.entries(g).map(([d,items])=>{const e=sum(items,"expense");return `<div class="day"><div class="day-h"><span>${dName(d)}</span><span class="num">${e?"−"+inr.format(e):""}</span></div>${items.map(txRow).join("")}</div>`}).join("");
+    list.innerHTML=["largest","smallest"].includes(filt.sort)?rows.map(txRow).join(""):Object.entries(g).map(([d,items])=>{const e=sum(items,"expense");return `<div class="day"><div class="day-h"><span>${dName(d)}</span><span class="num">${e?"−"+inr.format(e):""}</span></div>${items.map(txRow).join("")}</div>`}).join("");
     bindTx(list);
   }
   $("sampleRemove").hidden=!txns.some(t=>t.sample)&&!people.some(p=>p.sample);
@@ -783,7 +893,7 @@ function renderBudgets(){
   const oi=$("overallBudget"); if(document.activeElement!==oi) oi.value=settings.budget||"";
   const exp=sum(inMonth(cur),"expense");
   $("overallNote").textContent=settings.budget?`${inr.format(exp)} spent in ${mName(cur,{month:"long"})}`:"Set one to see a meter on the overview";
-  $("budMonth").textContent=mName(cur);
+  $("budMonth").textContent="Limits for every month · spending in "+mName(cur);
   const by={}; inMonth(cur).filter(t=>typeOf(t)==="expense").forEach(t=>by[t.cat]=(by[t.cat]||0)+t.amount);
   const cb=settings.catBudgets||{};
   const list=EXP.slice().sort((a,b)=>((cb[b.n]?1:0)-(cb[a.n]?1:0))||((by[b.n]||0)-(by[a.n]||0)));
@@ -797,14 +907,25 @@ function renderBudgets(){
       <div class="meta"><span class="num">${inr.format(s)} spent</span><span class="num">${l?(l-s>=0?`${inr.format(l-s)} left`:`${inr.format(s-l)} over`):"No limit"}</span></div></div></div>`;
   }).join("");
   el.querySelectorAll("input[data-cat]").forEach(i=>i.onchange=()=>{
-    const v=Math.max(0,Math.round(parseFloat(i.value)||0)); const next={...(settings.catBudgets||{})};
-    if(v) next[i.dataset.cat]=v; else delete next[i.dataset.cat];
-    settings={...settings,catBudgets:next}; saveSettings(); renderBudgets();
+    const v=Math.max(0,Math.round(parseFloat(i.value)||0));
+    saveSettings({category:i.dataset.cat,limit:v});
   });
   if(focusedId&&$(focusedId)) $(focusedId).focus();
 }
-$("overallBudget").onchange=()=>{settings={...settings,budget:Math.max(0,Math.round(parseFloat($("overallBudget").value)||0))};saveSettings();render()};
-async function saveSettings(msg="Budget saved"){try{await store.saveSettings(settings);if(msg)toast(msg)}catch(e){saveErr(e)}}
+$("overallBudget").onchange=()=>saveSettings({budget:Math.max(0,Math.round(parseFloat($("overallBudget").value)||0))});
+let budgetQueue=Promise.resolve();
+function saveSettings(next){
+  budgetQueue=budgetQueue.then(async()=>{
+    if(!store||!ready.settings){toast("Your ledger is still loading.");return}
+    const previous=settings;const limits={...(settings.catBudgets||{})};
+    if(next.category){if(next.limit)limits[next.category]=next.limit;else delete limits[next.category]}
+    settings={...settings,budget:next.budget??settings.budget,catBudgets:limits};
+    $("budgetStatus").textContent="Saving…";
+    try{await store.saveSettings(settings);$("budgetStatus").textContent="All changes saved";toast("Budget saved")}
+    catch(e){settings=previous;$("budgetStatus").textContent="Not saved. Re-enter your change to retry.";saveErr(e)}
+    render();
+  });return budgetQueue;
+}
 
 function nextRecurring(){
   const today=todayISO(); let best=null;
@@ -817,7 +938,7 @@ function nextRecurring(){
 }
 function renderRules(){
   const el=$("rules");
-  if(!rules.length){el.innerHTML=`<div class="empty"><strong>No recurring entries</strong>Add rent, salary or a SIP once and it logs itself every month.<div class="btns"><button class="primary" id="addRule2">Add recurring entry</button></div></div>`;$("addRule2").onclick=()=>openSheet(null,true);return}
+  if(!rules.length){el.innerHTML=`<div class="empty"><strong>No recurring entries</strong>Add rent, salary or a SIP once. Due entries appear when you open Galla.<div class="btns"><button class="primary" id="addRule2">Add recurring entry</button></div></div>`;$("addRule2").onclick=()=>openSheet(null,true);return}
   const inc=rules.filter(r=>r.active&&typeOf(r)==="income").reduce((s,r)=>s+r.amount,0), exp=rules.filter(r=>r.active&&typeOf(r)==="expense").reduce((s,r)=>s+r.amount,0);
   el.innerHTML=`<div class="filter-sum" style="margin:0 0 6px"><span>${rules.length} rule${rules.length>1?"s":""}</span><span class="num">${inc?`<span style="color:var(--income)">+${inr.format(inc)}</span> · `:""}−${inr.format(exp)} / month</span></div>`+
     rules.slice().sort((a,b)=>a.day-b.day).map(r=>`<div class="rule ${r.active?"":"paused"}" data-id="${esc(r.id)}">${catIcon(r.cat)}<div style="min-width:0"><div class="d">${esc(r.desc)}</div><div class="m"><span class="num" style="color:${typeOf(r)==="income"?"var(--income)":"inherit"}">${typeOf(r)==="income"?"+":"−"}${inr.format(r.amount)}</span> · day ${r.day} of each month · ${esc(r.cat)}${r.active?"":" · paused"}</div></div>
@@ -836,8 +957,9 @@ function renderRules(){
 $("addRule").onclick=()=>openSheet(null,true);
 
 // ---------- recurring materialization ----------
-function materialize(){
-  if(!ready.txns||!ready.rules||!store) return;
+async function materialize(){
+  if(!ready.txns||!ready.rules||!store||recurringBusy||entrySaving) return;
+  recurringBusy=true; let failed=0;
   const today=todayISO(), now=today.slice(0,7), have=new Set(txns.map(t=>t.id)); let added=0;
   for(const r of rules){ if(!r.active) continue;
     let m=r.start<shiftM(now,-11)?shiftM(now,-11):r.start;
@@ -845,9 +967,13 @@ function materialize(){
       const id=`r-${r.id}-${m}`, d=`${m}-${pad(Math.min(r.day,dim(m)))}`;
       if(d>today||have.has(id)||(r.skip||[]).includes(m)) continue;
       const t={id,amount:r.amount,desc:r.desc,cat:r.cat,pay:r.pay,type:typeOf(r),date:d,created:Date.now(),recurId:r.id};
-      txns.push(t); have.add(id); added++; store.saveTxn(t).catch(()=>{});
+      txns.push(t); have.add(id);
+      try{await store.saveTxn(t);added++}catch(e){txns=txns.filter(x=>x.id!==id);failed++;saveErr(e)}
     }}
-  if(added){render();toast(`Logged ${added} recurring entr${added>1?"ies":"y"}`)}
+  recurringBusy=false; render();
+  $("recurringStatus").textContent=failed?`${failed} due entries could not be saved. Retry below.`:added?`${added} due entries added. Review them before editing.`:"";
+  if(failed){const retry=document.createElement("button");retry.className="ghost";retry.textContent="Retry recurring saves";retry.onclick=()=>materialize();$("recurringStatus").append(retry)}
+  if(added)toast(`Logged ${added} recurring entr${added>1?"ies":"y"}`);
 }
 
 // ---------- sheet ----------
@@ -865,17 +991,17 @@ function setFormType(tp,keepCat){
   if(tp==="income"){sf.on=false;$("fSplit").checked=false;renderSplitForm()}
 }
 document.querySelectorAll("#formType button").forEach(b=>b.onclick=()=>setFormType(b.dataset.type,null));
-$("fDate").onchange=()=>{const d=$("fDate").value;if(d)$("repeatHint").textContent=`Logged automatically on day ${+d.slice(8)} of each month`};
+$("fDate").onchange=()=>{const d=$("fDate").value;if(d)$("repeatHint").textContent=`Due on day ${+d.slice(8)}; added when you open Galla`};
 
 function openSheet(t=null,repeat=false,opts={}){
   form={mode:"txn",id:t?.id||null,type:t?typeOf(t):"expense"};
-  $("form").reset();
+  $("form").reset(); $("entryOptions").open=!!t||repeat; $("entrySaveStatus").textContent="";
   setFormType(form.type,t?.cat);
   $("sheetTitle").textContent=t?"Edit entry":repeat?"New recurring entry":"Add entry";
   $("fDate").value=t?.date||(cur===todayISO().slice(0,7)?todayISO():`${cur}-01`);
   $("fDate").onchange();
   if(t){$("fAmount").value=t.split?t.split.total:t.amount;$("fDesc").value=t.desc;$("fPay").value=t.pay;$("submitBtn").textContent="Save changes"}
-  $("fPay").value=t?.pay||(repeat?"Auto-debit":"UPI");
+  $("fPay").value=t?.pay||(repeat?"Auto-debit":settings.preferences?.defaultPay||"UPI");
   $("fRepeat").checked=repeat; $("repeatWrap").hidden=!!t;
   const s0=t?.split;
   sf={on:!!s0||!!opts.split,group:s0?.group||opts.group||"",paidBy:s0?.paidBy||"me",parts:new Set(s0?Object.keys(s0.shares):["me"]),mode:s0?.mode||"equal",vals:{...(s0?.vals||{})}};
@@ -884,19 +1010,21 @@ function openSheet(t=null,repeat=false,opts={}){
   renderSplitForm();
   if(opts.split&&!t) $("sheetTitle").textContent="Add shared expense";
   const del=$("deleteBtn"); del.hidden=!t; del.classList.remove("confirm"); del.textContent="Delete";
-  $("scrim").hidden=false; document.body.style.overflow="hidden";
-  setTimeout(()=>$("fAmount").focus({preventScroll:true}),60);
+  activateModal("scrim"); $("scrim").hidden=false; document.body.style.overflow="hidden";
+  requestAnimationFrame(()=>{if(!$("scrim").hidden){$("form").scrollTop=0;$("fAmount").focus({preventScroll:true})}});
 }
-function closeSheet(){$("scrim").hidden=true;document.body.style.overflow=""}
+function closeSheet(){if(entrySaving)return;$("scrim").hidden=true;deactivateModal("scrim");document.body.style.overflow=""}
 $("closeSheet").onclick=closeSheet;
 $("scrim").onclick=e=>{if(e.target===$("scrim"))closeSheet()};
-document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("scrim").hidden)closeSheet()});
+document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("scrim").hidden&&$("scrim2").hidden)closeSheet()});
 $("fab").onclick=()=>openSheet(); $("addBtnDesk").onclick=()=>openSheet();
 
 $("form").addEventListener("submit",async ev=>{
   ev.preventDefault();
+  if(entrySaving)return;
+  if(!store||!ready.txns||!ready.rules){toast("Your ledger is still loading. Try again shortly.");return}
   const amount=Math.round(parseFloat($("fAmount").value)*100)/100;
-  if(!(amount>0)){toast("Enter an amount above ₹0");$("fAmount").focus();return}
+  if(!Number.isFinite(amount)||!(amount>0)){toast("Enter an amount above ₹0");$("fAmount").focus();return}
   const desc=$("fDesc").value.trim(); if(!desc){$("fDesc").focus();return}
   const catv=document.querySelector('input[name="fCat"]:checked')?.value||"Other";
   const date=$("fDate").value, pay=$("fPay").value, type=form.type;
@@ -912,19 +1040,27 @@ $("form").addEventListener("submit",async ev=>{
   } else if($("fRepeat").checked&&!prev){
     rule={id:newId("rule"),desc,amount,cat:catv,pay,type,day:+date.slice(8),start:mKey(date),active:true,skip:[]};
     t={id:`r-${rule.id}-${mKey(date)}`,amount,desc,cat:catv,pay,type,date,created:Date.now(),recurId:rule.id};
-    rules.push(rule);
+    // Commit the rule together with its first entry below.
   } else {
     t={...(prev||{}),id:prev?.id||newId("e"),amount,desc,cat:catv,pay,type,date,created:prev?.created||Date.now()};
     delete t.sample; delete t.split;
   }
-  txns=txns.filter(x=>x.id!==t.id).concat(t);
-  closeSheet(); cur=mKey(date); render();
+  const previousTxns=txns, previousRules=rules;
+  entrySaving=true; $("submitBtn").disabled=true; $("closeSheet").disabled=true;
+  $("entrySaveStatus").textContent="Saving…";
+  txns=txns.filter(x=>x.id!==t.id).concat(t); if(rule)rules=rules.concat(rule);
   try{
-    if(rule) await store.saveRule(rule);
-    await store.saveTxn(t);
-    toast(rule?"Added. It repeats every month.":prev?"Saved":split?"Shared expense added":type==="income"?"Income added":"Expense added");
-    if(rule) materialize();
-  }catch(e){saveErr(e)}
+    if(store.commitLedger) await store.commitLedger();
+    else {if(rule) await store.saveRule(rule);await store.saveTxn(t)}
+    entrySaving=false; closeSheet();cur=mKey(date);render();
+    toast(rule?"Added. Due entries appear when you open Galla.":prev?"Saved":split?"Shared expense added":type==="income"?"Income added":"Expense added");
+    if(rule)materialize();
+  }catch(e){
+    txns=previousTxns;rules=previousRules;
+    if(rule&&!store.commitLedger)try{await store.removeRule(rule.id)}catch{}
+    $("entrySaveStatus").textContent="Not saved. Your form is kept here; try Save again.";saveErr(e);
+  }finally{entrySaving=false;$("submitBtn").disabled=false;$("closeSheet").disabled=false}
+
 });
 
 $("deleteBtn").onclick=async()=>{
@@ -1111,8 +1247,8 @@ $("newFriend").onclick=()=>openDetail({kind:"newFriend"});
 $("addShared").onclick=()=>openSheet(null,false,{split:true});
 
 // ---------- split: detail sheet ----------
-function openDetail(st){detailState=st;renderDetail();$("scrim2").hidden=false;document.body.style.overflow="hidden";setTimeout(()=>$("detail").querySelector("input")?.focus({preventScroll:true}),60)}
-function closeDetail(){$("scrim2").hidden=true;detailState=null;if($("scrim").hidden)document.body.style.overflow=""}
+function openDetail(st){activateModal("scrim2");detailState=st;renderDetail();$("scrim2").hidden=false;document.body.style.overflow="hidden";requestAnimationFrame(()=>{if(detailState===st&&!$("scrim2").hidden)$("detail").querySelector("input")?.focus({preventScroll:true})})}
+function closeDetail(){$("scrim2").hidden=true;deactivateModal("scrim2");detailState=null;if($("scrim").hidden)document.body.style.overflow=""}
 $("scrim2").onclick=e=>{if(e.target===$("scrim2"))closeDetail()};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("scrim2").hidden)closeDetail()});
 const closeBtn=`<button class="iconbtn" data-close aria-label="Close">${svg("x")}</button>`;
@@ -1263,7 +1399,7 @@ $("removeSamples").onclick=async()=>{
 };
 
 // ---------- export ----------
-const browserDownloads={save:async({filename,data})=>{const url=URL.createObjectURL(new Blob([data],{type:"text/csv;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);return{status:"saved"}}};
+const browserDownloads={save:async({filename,data})=>{const url=URL.createObjectURL(new Blob([data],{type:filename.endsWith(".json")?"application/json;charset=utf-8":"text/csv;charset=utf-8"}));const a=document.createElement("a");a.href=url;a.download=filename;document.body.append(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(url),1000);return{status:"saved"}}};
 let downloads=browserDownloads;
 $("exportBtn").onclick=async()=>{
   const q=v=>`"${String(v).replace(/"/g,'""')}"`;
@@ -1277,8 +1413,9 @@ function localStore(){
   const K="kharcha-ledger-v2"; let d={};
   try{d=JSON.parse(localStorage.getItem(K))||JSON.parse(localStorage.getItem("kharcha-ledger-v1"))||{}}catch{}
   txns=d.txns||d.expenses||[]; rules=d.rules||[]; people=d.people||[]; groups=d.groups||[]; settings={budget:d.budget||0,catBudgets:{},...(d.settings||{})};
-  const p=async()=>{try{localStorage.setItem(K,JSON.stringify({txns,rules,people,groups,settings}))}catch(e){throw e}};
-  return {saveTxn:p,removeTxn:p,saveRule:p,removeRule:p,saveSettings:p,savePerson:p,removePerson:p,saveGroup:p,removeGroup:p};
+  let durable=JSON.parse(JSON.stringify(ledgerData()));
+  const p=async()=>{try{const data=JSON.stringify(ledgerData());localStorage.setItem(K,data);durable=JSON.parse(data)}catch(e){({txns,rules,people,groups,settings}=JSON.parse(JSON.stringify(durable)));render();throw e}};
+  return {commitLedger:p,replaceLedger:async data=>{localStorage.setItem(K,JSON.stringify(data));durable=JSON.parse(JSON.stringify(data));({txns,rules,people,groups,settings}=data)},saveTxn:p,removeTxn:p,saveRule:p,removeRule:p,saveSettings:p,savePerson:p,removePerson:p,saveGroup:p,removeGroup:p};
 }
 
 render();
@@ -1291,7 +1428,7 @@ render();
   $("exportBtn").hidden=!downloads;
   if(!db||!uid){
     store=localStore(); ready={txns:true,rules:true,settings:true}; materialize(); render();
-    $("status").textContent="Saved in this browser only. Export CSV for a backup. Data stays on this device.";
+    $("status").textContent="Saved in this browser only. Use Profile → Backup & restore for a full backup. Data stays on this device.";
     return;
   }
   const root=db.doc("data/users/"+uid+"/ledger");
@@ -1301,7 +1438,7 @@ render();
   store={
     saveTxn:t=>col.doc(t.id).set(strip(t)), removeTxn:id=>col.doc(id).delete(),
     saveRule:r=>rcol.doc(r.id).set(strip(r)), removeRule:id=>rcol.doc(id).delete(),
-    saveSettings:s=>sdoc.set({budget:s.budget||0,catBudgets:s.catBudgets||{},profile:s.profile||{}}),
+    saveSettings:s=>sdoc.set({budget:s.budget||0,catBudgets:s.catBudgets||{},profile:s.profile||{},preferences:s.preferences||{}}),
     savePerson:x=>pcol.doc(x.id).set(strip(x)), removePerson:id=>pcol.doc(id).delete(),
     saveGroup:x=>gcol.doc(x.id).set(strip(x)), removeGroup:id=>gcol.doc(id).delete()
   };
@@ -1319,7 +1456,7 @@ const lost=()=>{$("status").textContent="Lost connection to your saved ledger. R
     render();
   },lost);
   sdoc.onSnapshot(s=>{
-    if(s.exists){const d=s.data();settings={budget:d.budget||0,catBudgets:d.catBudgets||{},profile:d.profile||{}}}
+    if(s.exists){const d=s.data();settings={budget:d.budget||0,catBudgets:d.catBudgets||{},profile:d.profile||{},preferences:d.preferences||{}}}
     if(!ready.settings&&!s.metadata.fromCache){ready.settings=true;}
     render();
   },()=>{ready.settings=true;});

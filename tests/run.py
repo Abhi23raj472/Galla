@@ -1,6 +1,9 @@
 import json, sys, threading, http.server, functools, os
 from playwright.sync_api import sync_playwright
 
+if hasattr(sys.stdout, "reconfigure"):
+    sys.stdout.reconfigure(encoding="utf-8")
+
 DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 OUT = os.path.join(DIR, "tests", "screenshots"); os.makedirs(OUT, exist_ok=True)
 srv = http.server.ThreadingHTTPServer(("127.0.0.1", 8765), functools.partial(http.server.SimpleHTTPRequestHandler, directory=DIR))
@@ -31,6 +34,7 @@ with sync_playwright() as p:
         if typ == "income": pg.click('#formType [data-type="income"]')
         pg.fill("#fAmount", str(amount)); pg.fill("#fDesc", desc)
         if cat: pg.click(f'#catGrid label:has-text("{cat}")')
+        if date or repeat: pg.click("#entryOptions summary")
         if date: pg.fill("#fDate", date)
         if repeat: pg.check("#fRepeat")
         pg.click("#submitBtn"); pg.locator("#scrim").wait_for(state="hidden"); pg.wait_for_timeout(300)
@@ -66,40 +70,22 @@ with sync_playwright() as p:
     pg.reload(); pg.wait_for_function("ready.txns && ready.rules && ready.settings"); pg.wait_for_timeout(500)
     check("entries survive reload", E("txns.length") == 1)
 
-    # ---- PIN lock
-    check("lock hidden when no PIN", not pg.is_visible("#lock"))
-    pg.click("#acctBtn"); pg.fill("#aPin1","1234"); pg.fill("#aPin2","1243"); pg.click('#aPinForm button[type="submit"]'); pg.wait_for_timeout(100)
-    check("mismatched PIN rejected", "don't match" in pg.inner_text("#aErr") and not E("hasPin()"))
-    pg.fill("#aPin1","1234"); pg.fill("#aPin2","1234"); pg.click('#aPinForm button[type="submit"]'); pg.wait_for_timeout(200)
-    check("PIN turned on + saved", E("hasPin()") and "pinHash" in pg.evaluate("localStorage.getItem('mockdb')"))
-    check("PIN not stored in plain text", '"1234"' not in pg.evaluate("localStorage.getItem('mockdb')"))
-    pg.reload(); pg.wait_for_function("ready.settings"); pg.wait_for_timeout(500)
-    check("app locked after reload", pg.is_visible("#lock") and "Enter your PIN" in pg.inner_text("#lock"))
-    for k in "1111": pg.click(f'#lock [data-k="{k}"]')
-    pg.wait_for_timeout(500)
-    check("wrong PIN keeps it locked", pg.is_visible("#lock") and "Wrong PIN" in pg.inner_text("#lkMsg"))
-    for _ in range(4):
-        for k in "9999": pg.click(f'#lock [data-k="{k}"]')
-        pg.wait_for_timeout(80)
-    check("5 wrong tries -> cooldown", "Try again in" in pg.inner_text("#lkMsg"), pg.inner_text("#lkMsg"))
-    E("lockState.until=0; renderLock()")
-    pg.keyboard.type("1234"); pg.wait_for_timeout(200)
-    check("correct PIN (keyboard) unlocks", not pg.is_visible("#lock"))
-    pg.click("#acctBtn"); pg.click("#aChange"); pg.fill("#aCur","0000"); pg.fill("#aPin1","5678"); pg.fill("#aPin2","5678"); pg.click('#aPinForm button[type="submit"]'); pg.wait_for_timeout(500)
-    check("change PIN needs current PIN", "wrong" in pg.inner_text("#aErr"))
-    pg.fill("#aCur","1234"); pg.click('#aPinForm button[type="submit"]'); pg.wait_for_timeout(200)
-    pg.click("#aLockNow"); pg.wait_for_timeout(100)
-    check("lock now works", pg.is_visible("#lock"))
-    for k in "5678": pg.click(f'#lock [data-k="{k}"]')
-    pg.wait_for_timeout(200)
-    check("new PIN unlocks", not pg.is_visible("#lock"))
-    pg.click("#acctBtn"); pg.click("#aRemove"); pg.fill("#aOffPin","5678"); pg.click('#aOffForm button[type="submit"]'); pg.wait_for_timeout(200)
-    check("PIN turned off", not E("hasPin()"))
-    # forgot PIN path
-    E("(async()=>{const s='sx';settings={...settings,pinSalt:s,pinHash:await hashPin('4321',s)};await store.saveSettings(settings)})()"); pg.wait_for_timeout(500)
-    pg.reload(); pg.wait_for_function("ready.settings"); pg.wait_for_timeout(500)
-    pg.click("#lkForgot"); pg.click("#lkReset"); pg.wait_for_timeout(200)
-    check("forgot PIN removes lock, keeps entries", not pg.is_visible("#lock") and not E("hasPin()") and E("txns.length")==1)
+    # ---- profile persistence (PIN controls were removed)
+    check("removed PIN lock is absent", pg.locator("#lock").count() == 0)
+    tab("profile")
+    pg.fill('#profileForm [name="name"]', "  Abhishek Raj  ")
+    pg.click(".optional-profile summary")
+    pg.fill('#profileForm [name="email"]', "abhishek@example.com")
+    pg.fill('#profileForm [name="city"]', "Delhi")
+    pg.click('#profileForm button[type="submit"]')
+    pg.wait_for_function("settings.profile?.name === 'Abhishek Raj'")
+    check("profile saved with trimmed name", E("settings.profile.name") == "Abhishek Raj")
+    check("profile saved to account", E("JSON.parse(localStorage.getItem('mockdb'))['data/users/u1/settings'].profile.city") == "Delhi")
+    pg.reload(); pg.wait_for_function("ready.txns && ready.rules && ready.settings")
+    tab("profile")
+    check("profile survives reload", pg.input_value('#profileForm [name="email"]') == "abhishek@example.com")
+    check("saving profile preserves ledger", E("txns.length") == 1)
+    tab("overview")
 
     # ---- recurring backfill
     start = E("shiftM(todayISO().slice(0,7),-3)+'-05'")
@@ -267,7 +253,7 @@ with sync_playwright() as p:
         pg.set_viewport_size({"width": w, "height": h})
         for scheme in ["light", "dark"]:
             pg.emulate_media(color_scheme=scheme)
-            for t in ["overview", "transactions", "split", "budgets", "recurring"]:
+            for t in ["overview", "transactions", "split", "budgets", "recurring", "profile"]:
                 E(f"go('{t}')"); pg.wait_for_timeout(60)
                 ov = E("document.documentElement.scrollWidth - innerWidth")
                 check(f"no sideways scroll: {name}/{scheme}/{t}", ov <= 0, str(ov))

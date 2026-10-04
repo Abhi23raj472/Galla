@@ -10,6 +10,7 @@
 secrets/
 
 # Test output
+.test-deps/
 tests/screenshots/
 __pycache__/
 
