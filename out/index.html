@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
 <meta name="description" content="Galla: track personal spending and split shared expenses with friends, in rupees.">
-<meta name="theme-color" content="#eeeefe">
+<meta name="theme-color" content="#ECEEE8">
 <title>Galla — Expense Tracker, Budgets &amp; Bill Splitting</title>
 <link rel="canonical" href="https://abhi23raj472.github.io/Galla/">
 <meta name="robots" content="index,follow">
@@ -19,7 +19,7 @@
 <link rel="icon" type="image/svg+xml" href="assets/galla-logo.svg">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Hanken+Grotesk:wght@400;500;600;700&family=Instrument+Serif:ital@0;1&display=swap">
 <style>:root{color-scheme:light}body{margin:0;font:14px system-ui}img{max-width:100%}[hidden]{display:none!important}</style>
 </head>
 <body>
@@ -338,18 +338,18 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
 @media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
 </style>
 
-<link rel="stylesheet" href="glass.css">
+<link rel="stylesheet" href="premium.css">
 <noscript><p class="card">Galla helps you track expenses, manage budgets and split bills in rupees. Enable JavaScript to use your private ledger.</p></noscript>
 <a class="skip-link" href="#mainContent">Skip to dashboard</a>
 <aside class="sidebar" aria-label="Galla navigation">
- <a class="sidebar-brand" href="./" aria-label="Galla home"><img src="assets/galla-logo.svg" width="48" height="48" alt=""><div><strong>Galla</strong><span>Spend · Split · Settle</span></div></a>
+ <a class="sidebar-brand" href="./" aria-label="Galla home"><svg class="mark" width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><rect x="1" y="1" width="34" height="34" rx="11" fill="#16392D"/><rect x="11" y="15" width="14" height="2.4" rx="1.2" fill="#D4B26A"/><path d="M10 22h16" stroke="#F1F0E8" stroke-width="1.6" stroke-linecap="round" opacity=".5"/></svg><strong>Galla</strong></a>
  <nav class="tabs" id="topTabs" role="tablist" aria-label="Sections"></nav>
- <div class="sidebar-foot"><p>Your ledger.<br>Your browser. Your control.</p></div>
+ <button class="sidebar-foot" data-goto="profile"><span class="side-av" id="sideAv" aria-hidden="true">G</span><span class="side-who"><strong id="sideName">Your ledger</strong><small>Personal ledger</small></span></button>
 </aside>
 <div class="app">
-  <header class="top"><div class="page-intro"><h1 id="pageTitle">Overview</h1><p id="pageSubtitle">A little clarity for your everyday money.</p></div>
+  <header class="top"><div class="page-intro"><p class="page-date" id="pageDate" hidden></p><h1 id="pageTitle">Overview</h1><p id="pageSubtitle">A little clarity for your everyday money.</p></div>
     <div class="top-row">
-      <div class="brand"><span class="logo" id="brandLogo"></span><div><span class="mobile-brand-name">Galla</span><div class="tagline">Spend · Split · Settle</div></div></div>
+      <div class="brand"><svg class="mark" width="30" height="30" viewBox="0 0 36 36" aria-hidden="true"><rect x="1" y="1" width="34" height="34" rx="11" fill="#16392D"/><rect x="11" y="15" width="14" height="2.4" rx="1.2" fill="#D4B26A"/><path d="M10 22h16" stroke="#F1F0E8" stroke-width="1.6" stroke-linecap="round" opacity=".5"/></svg><span class="mobile-brand-name">Galla</span><span class="logo" id="brandLogo" hidden></span></div>
 
       <div class="top-actions">
 
@@ -375,31 +375,43 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
         <div class="btns"><button class="primary" data-add>Add first entry</button><button class="ghost" data-sample>Try sample data</button></div>
       </div>
 
-      <div class="dashboard-grid">
-        <div class="dashboard-main">
-          <section class="hero balance-card" aria-label="Monthly balance">
-            <div><div class="lbl" id="balLbl">Left this month</div><div class="big num" id="balance">₹0</div><p class="balance-caption">Your income and spending, in one clear view.</p></div>
-            <div class="hero-stats">
-              <div class="hero-stat"><div class="l"><i style="background:var(--income)"></i>Income</div><div class="v" id="hIncome">₹0</div></div>
-              <div class="hero-stat"><div class="l"><i style="background:var(--danger)"></i>Spending</div><div class="v" id="hSpent">₹0</div></div>
-              <div class="hero-stat" title="Daily spending excludes rent, investments and recurring entries"><div class="l">Daily average spend</div><div class="v" id="hDaily">₹0</div></div>
-            </div>
-          </section>
-          <section class="card activity-card">
-            <div class="card-h"><h2>Income vs spending</h2><div class="key"><span><i style="background:var(--income)"></i>Income</span><span><i style="background:var(--accent)"></i>Spending</span></div></div>
-            <p class="section-caption">Your last six months at a glance</p><div class="trend" id="trend"></div>
-            <div class="recent-section"><div class="card-h"><h2>Recent transactions</h2><button class="linkbtn" data-goto="transactions">See all entries</button></div><div id="recent"></div></div>
-          </section>
+      <section class="vault" aria-labelledby="balLbl">
+        <div class="vault-grid">
+          <div>
+            <h2 class="vault-lbl" id="balLbl">Left this month</h2>
+            <div class="figure num" id="balance">₹0</div>
+            <p class="vault-note" id="budgetText">Set a monthly budget to see how much you can spend each day.</p>
+          </div>
+          <div class="facts">
+            <div class="fact"><span class="fact-l">Spent</span><span class="num"><strong id="hSpent">₹0</strong><span class="fact-of" id="hSpentOf"></span></span></div>
+            <div class="fact" title="Daily spending excludes rent, investments and recurring entries"><span class="fact-l">Daily average</span><strong class="num" id="hDaily">₹0</strong></div>
+            <div class="fact"><span class="fact-l">Income</span><span><strong class="num" id="hIncome">—</strong><button type="button" class="gold-btn" id="addIncome" hidden>Add income</button></span></div>
+          </div>
         </div>
-        <aside class="card dashboard-side" aria-label="Budget and upcoming expenses">
-          <div class="card-h"><h2>Monthly budget</h2><button class="linkbtn" data-goto="budgets">Set budget</button></div>
-          <div class="budget-overview"><strong id="overviewBudgetAmount">No budget yet</strong><span id="overviewBudgetPercent"></span></div>
-          <div class="meter" id="meter"><i style="width:0"></i></div><div class="budget-line"><span id="budgetText">Set a limit to stay on track</span></div>
-          <div class="side-section"><div class="card-h"><h2>Top categories</h2><span class="sub" id="donutSub"></span></div><div id="donut"></div></div>
-          <div class="side-section"><div class="card-h"><h2>Upcoming recurring</h2><button class="linkbtn" data-goto="recurring">See all</button></div><div id="upcomingPreview"></div></div>
-        </aside>
+        <div class="runway" id="pace"></div>
+      </section>
+
+      <div class="ov-cols">
+        <div class="ov-col">
+          <section class="pcard" aria-labelledby="whereTitle"><div class="card-h"><h2 id="whereTitle">Where it went</h2><button class="linkbtn" data-goto="budgets">Set category budgets</button></div><div id="donut"></div></section>
+          <section class="pcard" aria-labelledby="recentTitle"><div class="card-h"><h2 id="recentTitle">Recent entries</h2><button class="linkbtn" data-goto="transactions">See all entries</button></div><div id="recent"></div></section>
+        </div>
+        <div class="ov-col">
+          <section class="pcard" aria-labelledby="quickTitle">
+            <div class="card-h"><h2 id="quickTitle">Quick entry</h2></div>
+            <form id="quickForm" class="quick-form" autocomplete="off" novalidate>
+              <label class="qf" for="qAmount">Amount<span class="q-amount"><span aria-hidden="true">₹</span><input id="qAmount" type="number" inputmode="decimal" min="0" step="0.01" placeholder="0"></span></label>
+              <label class="qf" for="qDesc">What was it for?<input id="qDesc" type="text" maxlength="80" placeholder="Groceries, auto, dinner"></label>
+              <fieldset class="qf q-cats"><legend>Category</legend><div class="q-chips" id="qCats"></div></fieldset>
+              <button class="q-save" type="submit" id="qSave">Save entry</button>
+              <p class="q-status" id="qStatus" role="status" aria-live="polite"></p>
+            </form>
+          </section>
+          <section class="pcard" aria-labelledby="upTitle"><div class="card-h"><h2 id="upTitle">Coming up</h2><button class="linkbtn" data-goto="recurring">Recurring</button></div><div id="upcomingPreview"></div></section>
+        </div>
       </div>
-      <details class="card spending-details"><summary>Daily spending &amp; insights<span>Explore your spending patterns</span></summary><div class="details-content"><div class="grid3" id="insights"></div><div class="card-h"><h2>Daily spending</h2><span class="sub">Choose a day to see its entries</span></div><div id="cal"></div></div></details>
+
+      <details class="card spending-details"><summary>History and insights<span>Six months, daily spending and comparisons</span></summary><div class="details-content"><div class="grid3" id="insights"></div><div class="card-h"><h2>Income and spending, six months</h2><div class="key"><span><i style="background:var(--income)"></i>Income</span><span><i style="background:var(--accent)"></i>Spending</span></div></div><div class="trend" id="trend"></div><div class="card-h" style="margin-top:28px"><h2>Daily spending</h2><span class="sub">Choose a day to see its entries</span></div><div id="cal"></div></div></details>
 
     </section>
 
@@ -749,6 +761,10 @@ function render(){
   $("pageTitle").textContent=section?section[1]:"Overview";
   const subtitles={overview:"A little clarity for your everyday money.",transactions:"Every entry, organized and easy to find.",split:"Shared expenses. Clear balances. Happier friends.",budgets:"Give every rupee a little direction.",recurring:"Set it once. Keep life moving.",profile:"Your details, all in one place."};
   $("pageSubtitle").textContent=subtitles[tab];
+  const ovw=tab==="overview", nm=(settings.profile?.name||"").trim().split(/\s+/)[0], hr=new Date().getHours();
+  $("pageDate").hidden=!ovw; $("pageSubtitle").hidden=ovw;
+  if(ovw){$("pageDate").textContent=new Date().toLocaleDateString("en-IN",{weekday:"long",day:"numeric",month:"long"});$("pageTitle").textContent=`${hr<12?"Good morning":hr<17?"Good afternoon":"Good evening"}${nm?`, ${nm}`:""}`}
+  const full=(settings.profile?.name||"").trim(); $("sideName").textContent=full||"Your ledger"; $("sideAv").textContent=(full.match(/\b\w/g)||["G"]).slice(0,2).join("").toUpperCase();
   const isNow=cur===todayISO().slice(0,7);
   $("monthLabel").textContent=mName(cur);
   $("thisMonth").hidden=isNow;
@@ -767,23 +783,28 @@ function renderOverview(){
   const mt=inMonth(cur), inc=sum(mt,"income"), exp=sum(mt,"expense");
   $("welcome").hidden=txns.length>0||!ready.txns;
   document.querySelector(".app").classList.toggle("empty-ledger",ready.txns&&!txns.length);
-  if(tab==="overview"&&settings.profile?.name)$("pageSubtitle").textContent=`${settings.profile.name}, here is your monthly money overview.`;
-  const bal=inc-exp;
-  if(inc>0){$("balLbl").textContent="Left this month";$("balance").textContent=(bal<0?"−":"")+inr.format(Math.abs(bal));$("balance").classList.toggle("neg",bal<0)}
-  else{$("balLbl").textContent="Spent this month";$("balance").textContent=inr.format(exp);$("balance").classList.remove("neg")}
-  $("hIncome").textContent=inc>0?inr.format(inc):"—"; $("hSpent").textContent=inr.format(exp);
+  const b=settings.budget||0, pct=b?exp/b*100:0, monthName=mName(cur,{month:"long"});
+  const bal=b?b-exp:inc-exp;
+  if(b){$("balLbl").textContent=bal>=0?`Left to spend in ${monthName}`:`Over budget in ${monthName}`}
+  else if(inc>0){$("balLbl").textContent=`Left from income in ${monthName}`}
+  else{$("balLbl").textContent=`Spent in ${monthName}`}
+  const showAmt=b||inc>0?Math.abs(bal):exp;
+  $("balance").textContent=((b||inc>0)&&bal<0?"−":"")+inr.format(showAmt); $("balance").classList.toggle("neg",(b||inc>0)&&bal<0);
+  $("hIncome").textContent=inc>0?inr.format(inc):"—"; $("hIncome").hidden=!(inc>0); $("addIncome").hidden=inc>0;
+  $("hSpent").textContent=inr.format(exp); $("hSpentOf").textContent=b?` of ${inr.format(b)}`:"";
   const daysSoFar=isNow?new Date().getDate():dim(cur);
   const FIXED=new Set(["Rent & housing","Investments"]);
   const everyday=mt.filter(t=>typeOf(t)==="expense"&&!t.recurId&&!FIXED.has(t.cat)).reduce((s,t)=>s+t.amount,0);
-  $("hDaily").textContent=inr.format(everyday/Math.max(1,daysSoFar));
-  const b=settings.budget||0, pct=b?exp/b*100:0;
-  $("meter").firstElementChild.style.width=Math.min(100,pct)+"%";
-  $("meter").classList.toggle("over",pct>100);
+  $("hDaily").textContent=inr.format(Math.round(everyday/Math.max(1,daysSoFar)));
+  const nb=$("budgetText");
   if(b){
-    const left=b-exp; let t=left>=0?`${inr.format(left)} of ${inr.format(b)} budget left`:`${inr.format(-left)} over your ${inr.format(b)} budget`;
-    if(isNow&&left>0){const rem=dim(cur)-new Date().getDate()+1;t+=rem>1?` · ${inr.format(left/rem)}/day for ${rem} days`:" · last day of the month"}
-    $("budgetText").textContent=t;
-  } else $("budgetText").textContent="No monthly budget set yet";
+    const left=b-exp, rem=dim(cur)-new Date().getDate()+1;
+    if(left<0) nb.textContent=`You're ${inr.format(-left)} over your ${inr.format(b)} budget this month.`;
+    else if(isNow&&rem>1) nb.innerHTML=`Spend up to <strong>${inr.format(Math.floor(left/rem))} a day</strong> for the next ${rem} days and you'll finish the month on budget.`;
+    else if(isNow) nb.textContent="Today is the last day of the month.";
+    else nb.textContent=`${inr.format(left)} of your ${inr.format(b)} budget was left.`;
+  } else nb.innerHTML=`<button class="linkbtn" data-goto="budgets">Set a monthly budget</button> to see how much you can spend each day.`;
+  renderRunway(mt,b,isNow);
 
   // insights
   const prev=shiftM(cur,-1), cutoff=isNow?new Date().getDate():31;
@@ -796,25 +817,13 @@ function renderOverview(){
   const nxH=nx?`<div class="v">${esc(nx.r.desc)}</div><div class="d">${typeOf(nx.r)==="income"?"+":""}${inr.format(nx.r.amount)} on ${dName(nx.date,{day:"numeric",month:"short"})}</div>`:'<div class="v">None set</div><div class="d"><button class="linkbtn" data-goto="recurring">Add rent, salary or SIPs</button></div>';
   $("insights").innerHTML=`<div class="card insight"><div class="eyebrow">Spending pace</div>${vs}</div><div class="card insight"><div class="eyebrow">Biggest expense</div>${bigH}</div><div class="card insight"><div class="eyebrow">Next recurring</div>${nxH}</div>`;
 
-  // donut
+  // categories
   const by={}; mt.filter(t=>typeOf(t)==="expense").forEach(t=>by[t.cat]=(by[t.cat]||0)+t.amount);
   const rows=Object.entries(by).sort((a,b)=>b[1]-a[1]);
-  $("donutSub").textContent=rows.length?`${rows.length} categor${rows.length>1?"ies":"y"}`:"";
-  if(!rows.length){$("donut").innerHTML='<div class="empty" style="padding:18px"><strong>No spending yet</strong>Your category split shows up here.</div>'}
-  else{
-    const R=58,C=2*Math.PI*R; let off=0, arcs="";
-    const shown=rows.slice(0,6), rest=rows.slice(6).reduce((s,r)=>s+r[1],0); if(rest) shown.push(["More",rest]);
-    for(const [n,v] of shown){const len=v/exp*C;arcs+=`<circle cx="75" cy="75" r="${R}" fill="none" stroke="${n==="More"?"#9AA8A4":cat(n).c}" stroke-width="18" stroke-dasharray="${Math.max(0,len-2)} ${C}" stroke-dashoffset="${-off}" transform="rotate(-90 75 75)"/>`;off+=len}
-    $("donut").innerHTML=`<div class="donut-wrap"><div class="donut"><svg viewBox="0 0 150 150" role="img" aria-label="Spending by category"><circle cx="75" cy="75" r="${R}" fill="none" stroke="var(--surface-2)" stroke-width="18"/>${arcs}<text x="75" y="72" text-anchor="middle" font-size="11" fill="var(--muted)" font-family="Plus Jakarta Sans,sans-serif">Spent</text><text x="75" y="90" text-anchor="middle" font-size="16" font-weight="600" fill="var(--ink)" font-family="Plus Jakarta Sans,sans-serif">${compact(exp)}</text></svg></div>
-      <div class="legend">${shown.map(([n,v])=>`<div class="legend-row"><span class="sw" style="background:${n==="More"?"#9AA8A4":cat(n).c}"></span><span class="n">${esc(n)}</span><span class="a num">${inr.format(v)} · ${Math.round(v/exp*100)}%</span></div>`).join("")}</div></div>`;
-  }
 
-  // Glass overview: category progress and recurring preview use real ledger data.
-  $("overviewBudgetAmount").textContent=b?`${inr.format(exp)} of ${inr.format(b)}`:"No budget set";
-  $("overviewBudgetPercent").textContent=b?`${Math.round(pct)}%`:"";
-  $("donut").innerHTML=rows.length?rows.slice(0,4).map(([name,value])=>`<div class="category-row">${catIcon(name)}<div><div class="category-top"><span>${esc(name)}</span><span class="num">${inr.format(value)} · ${Math.round(value/exp*100)}%</span></div><div class="category-progress"><i style="width:${value/exp*100}%"></i></div></div></div>`).join(""):'<div class="empty"><strong>No spending yet</strong>Your categories appear after your first expense.</div>';
+  $("donut").innerHTML=rows.length?rows.slice(0,4).map(([name,value])=>`<div class="category-row">${catIcon(name)}<div class="category-mid"><div class="category-top"><span>${esc(name)}</span><span class="pct num">${Math.round(value/exp*100)}%</span></div><div class="category-progress"><i style="width:${value/exp*100}%"></i></div></div><span class="category-amt num">${inr.format(value)}</span></div>`).join(""):'<div class="empty"><strong>No spending yet</strong>Your categories appear after your first expense.</div>';
   const upcoming=rules.filter(r=>r.active).map(r=>{let k=today.slice(0,7);if(k<r.start)k=r.start;let date=`${k}-${pad(Math.min(r.day,dim(k)))}`;if(date<=today){k=shiftM(k,1);date=`${k}-${pad(Math.min(r.day,dim(k)))}`;}return {r,date}}).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
-  $("upcomingPreview").innerHTML=upcoming.length?upcoming.map(({r,date})=>`<div class="upcoming-row">${catIcon(r.cat)}<div><strong>${esc(r.desc)}</strong><small>${dName(date,{day:"numeric",month:"short"})}</small></div><span class="num">${typeOf(r)==="income"?"+":"−"}${inr.format(r.amount)}</span></div>`).join(""):'<div class="empty"><strong>Nothing scheduled</strong><button class="linkbtn" data-goto="recurring">Add rent, salary or subscriptions</button></div>';
+  $("upcomingPreview").innerHTML=upcoming.length?upcoming.map(({r,date})=>`<div class="upcoming-row">${catIcon(r.cat)}<div><strong>${esc(r.desc)}</strong><small>${dName(date,{day:"numeric",month:"short"})}</small></div><span class="num">${typeOf(r)==="income"?"+":"−"}${inr.format(r.amount)}</span></div>`).join(""):'<div class="up-empty"><span class="up-ic" aria-hidden="true">'+svg("repeat")+'</span><div><strong>Nothing scheduled</strong><p>Add rent, salary or subscriptions and Galla will plan them into your daily allowance.</p><button class="ghost" data-goto="recurring">Add a recurring payment</button></div></div>';
   // calendar
   const days=dim(cur), [yy,mm]=cur.split("-").map(Number), start=(new Date(yy,mm-1,1).getDay()+6)%7;
   const perDay={}; mt.filter(t=>typeOf(t)==="expense").forEach(t=>perDay[t.date]=(perDay[t.date]||0)+t.amount);
@@ -836,20 +845,61 @@ function renderOverview(){
   let s=`<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Income and spending over six months">`;
   for(let g=1;g<=3;g++){const y=sc(top*g/3);s+=`<line x1="0" x2="${W}" y1="${y}" y2="${y}" stroke="var(--line)" stroke-dasharray="2 4"/>`}
   s+=`<line x1="0" x2="${W}" y1="${H-B}" y2="${H-B}" stroke="var(--line)"/>`;
-  if(b){s+=`<line x1="0" x2="${W}" y1="${sc(b)}" y2="${sc(b)}" stroke="var(--marigold)" stroke-width="1.5" stroke-dasharray="6 5"/><rect x="${W-78}" y="${sc(b)-17}" width="78" height="14" fill="var(--surface)"/><text x="${W-2}" y="${sc(b)-6}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="Plus Jakarta Sans,sans-serif">budget ${compact(b)}</text>`}
+  if(b){s+=`<line x1="0" x2="${W}" y1="${sc(b)}" y2="${sc(b)}" stroke="var(--marigold)" stroke-width="1.5" stroke-dasharray="6 5"/><rect x="${W-78}" y="${sc(b)-17}" width="78" height="14" fill="var(--surface)"/><text x="${W-2}" y="${sc(b)-6}" text-anchor="end" font-size="11" fill="var(--muted)" font-family="inherit">budget ${compact(b)}</text>`}
   ms.forEach((k,i)=>{
     const cx=i*bw+bw/2, w=Math.min(26,bw/3.2), on=k===cur;
     const [vi,ve]=vals[i];
-    [[vi,cx-w-2,"var(--income)"],[ve,cx+2,"var(--accent)"]].forEach(([v,x,c])=>{const y=sc(v);s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(0,H-B-y)}" rx="4" fill="${c}" opacity="${on?1:.45}"/>`;if(v>0&&on)s+=`<text x="${x+w/2}" y="${y-6}" text-anchor="middle" font-size="11" fill="var(--ink)" font-family="Plus Jakarta Sans,sans-serif">${compact(v)}</text>`});
-    s+=`<text x="${cx}" y="${H-9}" text-anchor="middle" font-size="12" font-weight="${on?600:400}" fill="${on?"var(--ink)":"var(--muted)"}" font-family="Plus Jakarta Sans,sans-serif">${mName(k,{month:"short"})}</text>`;
+    [[vi,cx-w-2,"var(--income)"],[ve,cx+2,"var(--accent)"]].forEach(([v,x,c])=>{const y=sc(v);s+=`<rect x="${x}" y="${y}" width="${w}" height="${Math.max(0,H-B-y)}" rx="4" fill="${c}" opacity="${on?1:.45}"/>`;if(v>0&&on)s+=`<text x="${x+w/2}" y="${y-6}" text-anchor="middle" font-size="11" fill="var(--ink)" font-family="inherit">${compact(v)}</text>`});
+    s+=`<text x="${cx}" y="${H-9}" text-anchor="middle" font-size="12" font-weight="${on?600:400}" fill="${on?"var(--ink)":"var(--muted)"}" font-family="inherit">${mName(k,{month:"short"})}</text>`;
   });
   $("trend").innerHTML=s+"</svg>";
 
   // recent
   const rec=mt.filter(t=>typeOf(t)!=="settle").sort((a,b)=>b.date.localeCompare(a.date)||(b.created||0)-(a.created||0)).slice(0,3);
-  $("recent").innerHTML=rec.length?rec.map(txRow).join(""):`<div class="empty" style="padding:16px"><strong>Nothing in ${mName(cur,{month:"long"})}</strong><div class="btns"><button class="primary" data-add>Add entry</button></div></div>`;
+  let lastDay=""; $("recent").innerHTML=rec.length?rec.map(t=>{const h=t.date!==lastDay?`<p class="rec-day">${dName(t.date,{weekday:"long",day:"numeric",month:"long"})}</p>`:"";lastDay=t.date;return h+txRow(t)}).join(""):`<div class="empty" style="padding:16px"><strong>Nothing in ${mName(cur,{month:"long"})}</strong><div class="btns"><button class="primary" data-add>Add entry</button></div></div>`;
   bindTx($("recent"));
 }
+
+function renderRunway(mt,b,isNow){
+  const el=$("pace"); if(!el)return;
+  const today=todayISO(), days=dim(cur), nowKey=today.slice(0,7);
+  const upto=cur>nowKey?0:isNow?+today.slice(8):days;
+  const per=Array(days+1).fill(0); mt.filter(t=>typeOf(t)==="expense").forEach(t=>per[+t.date.slice(8)]+=t.amount);
+  const pace=b?b/days:0, top=Math.max(1,...per,pace*2);
+  let bars="";
+  for(let d=1;d<=days;d++){
+    const v=per[d], cls=d>upto?"f":isNow&&d===upto?"today":"";
+    const h=d>upto?18:v?Math.max(8,Math.round(v/top*72)):4;
+    bars+=`<span class="${cls}${v?" hit":""}" style="height:${isNow&&d===upto&&!v?18:h}px" title="${dName(`${cur}-${pad(d)}`,{day:"numeric",month:"short"})}: ${v?inr.format(v):"nothing spent"}"></span>`;
+  }
+  const paceLine=b?`<i class="pace" style="bottom:${Math.round(pace/top*72)}px"></i>`:"";
+  const spentDays=per.slice(1,upto+1).filter(Boolean).length;
+  el.innerHTML=`<div class="days" role="img" aria-label="${esc(mName(cur,{month:"long"}))}: spending on ${spentDays} of ${upto} days so far${b?`, against an even pace of ${inr.format(pace)} a day`:""}">${bars}${paceLine}</div><div class="rlabels"><span>${dName(`${cur}-01`,{day:"numeric",month:"short"})}</span>${isNow?`<span class="r-today" style="left:${((upto-.5)/days*100).toFixed(2)}%">Today</span>`:""}<span>${dName(`${cur}-${pad(days)}`,{day:"numeric",month:"short"})}</span></div><p class="r-cap">Each bar is a day.${b?` The dashed line is the even daily pace for your budget, ${inr.format(Math.round(pace))}.`:""}</p>`;
+}
+
+const QUICK_CATS=[["Food","Food & dining"],["Groceries","Groceries"],["Transport","Transport"],["Bills","Bills & recharge"],["Shopping","Shopping"],["Other","Other"]];
+$("qCats").innerHTML=QUICK_CATS.map(([l,n],i)=>`<label><input type="radio" name="qCat" value="${esc(n)}"${i===0?" checked":""}><span>${esc(l)}</span></label>`).join("");
+let quickSaving=false;
+$("quickForm").addEventListener("submit",async ev=>{
+  ev.preventDefault(); if(quickSaving)return;
+  const st=$("qStatus");
+  if(!store||!ready.txns){st.textContent="Your ledger is still loading. Try again shortly.";return}
+  const amount=Math.round(parseFloat($("qAmount").value)*100)/100;
+  if(!Number.isFinite(amount)||!(amount>0)){st.textContent="Enter an amount above ₹0.";$("qAmount").focus();return}
+  const desc=$("qDesc").value.trim(); if(!desc){st.textContent="Add what it was for.";$("qDesc").focus();return}
+  const catv=document.querySelector('input[name="qCat"]:checked')?.value||"Other";
+  const date=cur===todayISO().slice(0,7)?todayISO():`${cur}-01`;
+  const t={id:newId("e"),amount,desc,cat:catv,pay:settings.preferences?.defaultPay||"UPI",type:"expense",date,created:Date.now()};
+  const previous=txns; quickSaving=true; $("qSave").disabled=true; st.textContent="Saving…";
+  txns=txns.concat(t);
+  try{
+    if(store.commitLedger) await store.commitLedger(); else await store.saveTxn(t);
+    $("qAmount").value=""; $("qDesc").value=""; st.textContent=""; render(); toast("Expense added");
+  }catch(e){txns=previous; st.textContent="Not saved. Try again."; saveErr(e)}
+  finally{quickSaving=false;$("qSave").disabled=false}
+});
+$("addIncome").onclick=()=>{openSheet();setFormType("income");$("submitBtn").textContent="Add income"};
+let runT;addEventListener("resize",()=>{clearTimeout(runT);runT=setTimeout(()=>{if(tab==="overview")renderOverview()},150)});
 
 function txRow(t){
   const inc=typeOf(t)==="income", sp=t.split;
