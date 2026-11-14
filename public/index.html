@@ -344,7 +344,7 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
 <aside class="sidebar" aria-label="Galla navigation">
  <a class="sidebar-brand" href="./" aria-label="Galla home"><svg class="mark" width="36" height="36" viewBox="0 0 36 36" aria-hidden="true"><rect x="1" y="1" width="34" height="34" rx="11" fill="#16392D"/><rect x="11" y="15" width="14" height="2.4" rx="1.2" fill="#D4B26A"/><path d="M10 22h16" stroke="#F1F0E8" stroke-width="1.6" stroke-linecap="round" opacity=".5"/></svg><strong>Galla</strong></a>
  <nav class="tabs" id="topTabs" role="tablist" aria-label="Sections"></nav>
- <button class="sidebar-foot" data-goto="profile"><span class="side-av" id="sideAv" aria-hidden="true">G</span><span class="side-who"><strong id="sideName">Your ledger</strong><small>Personal ledger</small></span></button>
+ <button class="sidebar-foot" data-goto="profile"><span class="side-av" id="sideAv" aria-hidden="true">G</span><span class="side-who"><strong id="sideName">Your ledger</strong><small id="sideSync">On this device</small></span></button>
 </aside>
 <div class="app">
   <header class="top"><div class="page-intro"><p class="page-date" id="pageDate" hidden></p><h1 id="pageTitle">Overview</h1><p id="pageSubtitle">A little clarity for your everyday money.</p></div>
@@ -381,6 +381,7 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
             <h2 class="vault-lbl" id="balLbl">Left this month</h2>
             <div class="figure num" id="balance">₹0</div>
             <p class="vault-note" id="budgetText">Set a monthly budget to see how much you can spend each day.</p>
+            <ul class="cat-alerts" id="catAlerts" hidden></ul>
           </div>
           <div class="facts">
             <div class="fact"><span class="fact-l">Spent</span><span class="num"><strong id="hSpent">₹0</strong><span class="fact-of" id="hSpentOf"></span></span></div>
@@ -424,6 +425,7 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
             <button data-type="" aria-pressed="true">All</button><button data-type="expense" aria-pressed="false">Spent</button><button data-type="income" aria-pressed="false">Income</button>
           </div>
           <select class="sel" id="catFilter" aria-label="Filter by category"><option value="">All categories</option></select>
+          <button class="ghost" id="importBtn" type="button"><svg class="i" data-i="download"></svg>Import statement</button>
         </div>
         <details class="entry-options"><summary>Date range &amp; sorting</summary><div class="range-filters"><label class="fl">From<input type="date" id="filterFrom"></label><label class="fl">To<input type="date" id="filterTo"></label><label class="fl">Sort entries<select id="entrySort"><option value="newest">Newest first</option><option value="oldest">Oldest first</option><option value="largest">Largest amount</option><option value="smallest">Smallest amount</option></select></label></div><p class="note">A date range searches across months.</p></details><p id="rangeStatus" role="status"></p><div id="recurringFilter" hidden><span class="chip">Generated recurring entries <button id="clearRecurring" aria-label="Show all entries">×</button></span></div><div id="dayChip"></div>
         <div class="filter-sum" id="filterSum"></div>
@@ -531,6 +533,7 @@ select.sel{padding:9px 10px;border:1px solid var(--line);border-radius:10px;back
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
 
+<script src="config.js"></script>
 <script>
 // ---------- constants ----------
 const ICONS={
@@ -636,8 +639,9 @@ function renderProfile(){
   const p=settings.profile||{};
   const fields=[["name","Display name","text","name",80]];
   const initials=(p.name||"Your profile").trim().split(/\s+/).slice(0,2).map(n=>n[0]).join("").toUpperCase();
-  $("profileContent").innerHTML=`<div class="profile-grid"><aside class="card profile-summary"><div class="profile-avatar" aria-hidden="true">${esc(initials)}</div><h2>${esc(p.name||"Your profile")}</h2><p>Your ledger is stored on this device. This profile is not a sign-in account.</p></aside><div class="card"><h2>Profile & preferences</h2><p class="note">Your display name personalizes the overview. Choose the payment method you use most often.</p><form id="profileForm"><div class="profile-fields">${fields.map(([k,l,t,a,m])=>`<label class="fl">${l}<input name="${k}" type="${t}" autocomplete="${a}" maxlength="${m}" value="${esc(p[k]||"")}"></label>`).join("")}<label class="fl">Default payment method<select name="defaultPay">${["UPI","Card","Cash","Net banking","Auto-debit"].map(v=>`<option ${v===(settings.preferences?.defaultPay||"UPI")?"selected":""}>${v}</option>`).join("")}</select></label></div><details class="optional-profile"><summary>Optional personal details</summary><p class="note">These details are kept for your reference only and are included in full backups. They do not enable syncing or contact anyone.</p><div class="profile-fields">${[["email","Email address","email"],["phone","Phone number","tel"],["city","City","text"],["occupation","Occupation","text"]].map(([k,l,t])=>`<label class="fl">${l}<input name="${k}" type="${t}" maxlength="120" value="${esc(p[k]||"")}"></label>`).join("")}</div></details><div class="profile-actions"><button class="primary" type="submit">Save profile</button><span id="profileStatus" role="status" aria-live="polite"></span></div></form></div></div><section class="card data-card"><h2>Backup & restore</h2><p class="note">Clearing browser data or changing devices can remove your ledger. Download a full backup to keep entries, friends, groups, recurring rules, budgets and profile together. Keep the file private: it contains your personal data.</p><div class="profile-actions"><button class="primary" id="backupBtn">Download full backup</button><label class="ghost file-label">Choose backup to restore<input id="restoreFile" type="file" accept="application/json,.json"></label></div><p id="backupStatus" role="status" aria-live="polite"></p><div id="restorePreview" hidden></div></section>`;
+  $("profileContent").innerHTML=`<div class="profile-grid"><aside class="card profile-summary"><div class="profile-avatar" aria-hidden="true">${esc(initials)}</div><h2>${esc(p.name||"Your profile")}</h2><p id="profileWhere">Your ledger is stored on this device.</p></aside><div class="card"><h2>Profile & preferences</h2><p class="note">Your display name personalizes the overview. Choose the payment method you use most often.</p><form id="profileForm"><div class="profile-fields">${fields.map(([k,l,t,a,m])=>`<label class="fl">${l}<input name="${k}" type="${t}" autocomplete="${a}" maxlength="${m}" value="${esc(p[k]||"")}"></label>`).join("")}<label class="fl">Default payment method<select name="defaultPay">${["UPI","Card","Cash","Net banking","Auto-debit"].map(v=>`<option ${v===(settings.preferences?.defaultPay||"UPI")?"selected":""}>${v}</option>`).join("")}</select></label></div><details class="optional-profile"><summary>Optional personal details</summary><p class="note">These details are kept for your reference only and are included in full backups. They do not enable syncing or contact anyone.</p><div class="profile-fields">${[["email","Email address","email"],["phone","Phone number","tel"],["city","City","text"],["occupation","Occupation","text"]].map(([k,l,t])=>`<label class="fl">${l}<input name="${k}" type="${t}" maxlength="120" value="${esc(p[k]||"")}"></label>`).join("")}</div></details><div class="profile-actions"><button class="primary" type="submit">Save profile</button><span id="profileStatus" role="status" aria-live="polite"></span></div></form></div></div><section class="card data-card"><h2>Backup & restore</h2><p class="note">Clearing browser data or changing devices can remove your ledger. Download a full backup to keep entries, friends, groups, recurring rules, budgets and profile together. Keep the file private: it contains your personal data.</p><div class="profile-actions"><button class="primary" id="backupBtn">Download full backup</button><label class="ghost file-label">Choose backup to restore<input id="restoreFile" type="file" accept="application/json,.json"></label></div><p id="backupStatus" role="status" aria-live="polite"></p><div id="restorePreview" hidden></div></section>`;
   bindBackupControls();
+  $("profileContent").insertAdjacentHTML("afterbegin",'<section class="card account-card" id="accountCard" aria-labelledby="acctTitle"></section>'); renderAccount();
   $("profileForm").onsubmit=async e=>{
     e.preventDefault(); if(!store||!ready.settings){toast("Your ledger is still loading. Try again shortly.");return}
     const button=e.currentTarget.querySelector('[type="submit"]');button.disabled=true;
@@ -798,9 +802,10 @@ function renderOverview(){
   $("hDaily").textContent=inr.format(Math.round(everyday/Math.max(1,daysSoFar)));
   const nb=$("budgetText");
   if(b){
-    const left=b-exp, rem=dim(cur)-new Date().getDate()+1;
+    const left=b-exp, rem=dim(cur)-new Date().getDate()+1, due=isNow?dueLaterThisMonth():0, free=left-due;
     if(left<0) nb.textContent=`You're ${inr.format(-left)} over your ${inr.format(b)} budget this month.`;
-    else if(isNow&&rem>1) nb.innerHTML=`Spend up to <strong>${inr.format(Math.floor(left/rem))} a day</strong> for the next ${rem} days and you'll finish the month on budget.`;
+    else if(isNow&&due&&free<=0) nb.textContent=`Your upcoming recurring payments (${inr.format(due)}) use up the rest of this month's budget.`;
+    else if(isNow&&rem>1) nb.innerHTML=`Spend up to <strong>${inr.format(Math.floor(free/rem))} a day</strong> for the next ${rem} days and you'll finish the month on budget${due?`, after ${inr.format(due)} of upcoming recurring payments`:""}.`;
     else if(isNow) nb.textContent="Today is the last day of the month.";
     else nb.textContent=`${inr.format(left)} of your ${inr.format(b)} budget was left.`;
   } else nb.innerHTML=`<button class="linkbtn" data-goto="budgets">Set a monthly budget</button> to see how much you can spend each day.`;
@@ -820,6 +825,11 @@ function renderOverview(){
   // categories
   const by={}; mt.filter(t=>typeOf(t)==="expense").forEach(t=>by[t.cat]=(by[t.cat]||0)+t.amount);
   const rows=Object.entries(by).sort((a,b)=>b[1]-a[1]);
+  const al=Object.entries(settings.catBudgets||{}).filter(([c,l])=>l>0&&(by[c]||0)/l>=.8)
+    .map(([c,l])=>({c,l,v:by[c]||0,r:(by[c]||0)/l})).sort((x,y)=>y.r-x.r);
+  $("catAlerts").hidden=!al.length;
+  $("catAlerts").innerHTML=al.slice(0,3).map(a=>`<li class="${a.v>a.l?"over":"near"}"><span class="dot" aria-hidden="true"></span>${a.v>a.l?`${esc(a.c)} is ${inr.format(r2(a.v-a.l))} over its ${inr.format(a.l)} limit`:`${esc(a.c)} is at ${Math.round(a.r*100)}% of its ${inr.format(a.l)} limit`}</li>`).join("")
+    +(al.length>3?`<li><button class="linkbtn" data-goto="budgets">${al.length-3} more categories near their limit</button></li>`:"");
 
   $("donut").innerHTML=rows.length?rows.slice(0,4).map(([name,value])=>`<div class="category-row">${catIcon(name)}<div class="category-mid"><div class="category-top"><span>${esc(name)}</span><span class="pct num">${Math.round(value/exp*100)}%</span></div><div class="category-progress"><i style="width:${value/exp*100}%"></i></div></div><span class="category-amt num">${inr.format(value)}</span></div>`).join(""):'<div class="empty"><strong>No spending yet</strong>Your categories appear after your first expense.</div>';
   const upcoming=rules.filter(r=>r.active).map(r=>{let k=today.slice(0,7);if(k<r.start)k=r.start;let date=`${k}-${pad(Math.min(r.day,dim(k)))}`;if(date<=today){k=shiftM(k,1);date=`${k}-${pad(Math.min(r.day,dim(k)))}`;}return {r,date}}).sort((a,b)=>a.date.localeCompare(b.date)).slice(0,3);
@@ -858,6 +868,14 @@ function renderOverview(){
   const rec=mt.filter(t=>typeOf(t)!=="settle").sort((a,b)=>b.date.localeCompare(a.date)||(b.created||0)-(a.created||0)).slice(0,3);
   let lastDay=""; $("recent").innerHTML=rec.length?rec.map(t=>{const h=t.date!==lastDay?`<p class="rec-day">${dName(t.date,{weekday:"long",day:"numeric",month:"long"})}</p>`:"";lastDay=t.date;return h+txRow(t)}).join(""):`<div class="empty" style="padding:16px"><strong>Nothing in ${mName(cur,{month:"long"})}</strong><div class="btns"><button class="primary" data-add>Add entry</button></div></div>`;
   bindTx($("recent"));
+}
+
+// Recurring expenses that are still due later this month and not yet logged.
+function dueLaterThisMonth(){
+  const today=todayISO(), k=today.slice(0,7);
+  return r2(rules.filter(r=>r.active&&typeOf(r)==="expense"&&r.start<=k&&!(r.skip||[]).includes(k))
+    .filter(r=>`${k}-${pad(Math.min(r.day,dim(k)))}`>today&&!txns.some(t=>t.id===`r-${r.id}-${k}`))
+    .reduce((s,r)=>s+r.amount,0));
 }
 
 function renderRunway(mt,b,isNow){
@@ -1136,6 +1154,9 @@ function avatar(id,size=""){
   return `<span class="av ${size}" style="background:color-mix(in srgb,${c} 22%,var(--surface));color:${c}">${esc(ini)}</span>`;
 }
 const r2=v=>Math.round(v*100)/100;
+const UPI_RE=/^[a-z0-9._-]{2,256}@[a-z][a-z0-9.-]{1,63}$/i;
+const validUpi=v=>UPI_RE.test((v||"").trim());
+const upiLink=(p,amt)=>`upi://pay?pa=${encodeURIComponent(p.upi.trim())}&pn=${encodeURIComponent(p.name)}&am=${r2(amt).toFixed(2)}&cu=INR&tn=${encodeURIComponent("Galla settle-up")}`;
 function memberPool(){
   if(sf.group){const g=groups.find(x=>x.id===sf.group);return ["me",...(g?.members||[])]}
   return ["me",...people.map(p=>p.id)];
@@ -1297,7 +1318,7 @@ $("newFriend").onclick=()=>openDetail({kind:"newFriend"});
 $("addShared").onclick=()=>openSheet(null,false,{split:true});
 
 // ---------- split: detail sheet ----------
-function openDetail(st){activateModal("scrim2");detailState=st;renderDetail();$("scrim2").hidden=false;document.body.style.overflow="hidden";requestAnimationFrame(()=>{if(detailState===st&&!$("scrim2").hidden)$("detail").querySelector("input")?.focus({preventScroll:true})})}
+function openDetail(st){activateModal("scrim2");detailState=st;$("detail").closest(".sheet").classList.toggle("wide",st.kind==="import");renderDetail();$("scrim2").hidden=false;document.body.style.overflow="hidden";requestAnimationFrame(()=>{if(detailState===st&&!$("scrim2").hidden)$("detail").querySelector("input")?.focus({preventScroll:true})})}
 function closeDetail(){$("scrim2").hidden=true;deactivateModal("scrim2");detailState=null;if($("scrim").hidden)document.body.style.overflow=""}
 $("scrim2").onclick=e=>{if(e.target===$("scrim2"))closeDetail()};
 document.addEventListener("keydown",e=>{if(e.key==="Escape"&&!$("scrim2").hidden)closeDetail()});
@@ -1317,7 +1338,7 @@ function renderDetail(){
       <label class="fl">Name<input id="dName" maxlength="40" required placeholder="Rahul Sharma"></label>
       <label class="fl">UPI ID (optional)<input id="dUpi" maxlength="60" placeholder="name@okaxis"></label>
       <div class="sheet-actions"><button class="primary" type="submit">Add friend</button></div></form>`;
-    $("dForm").onsubmit=async e=>{e.preventDefault();const n=$("dName").value.trim();if(!n)return;const x=await addPerson(n,$("dUpi").value);toast(`${x.name} added`);openDetail({kind:"friend",id:x.id});render()};
+    $("dForm").onsubmit=async e=>{e.preventDefault();const n=$("dName").value.trim();if(!n)return;const u=$("dUpi").value.trim();if(u&&!validUpi(u)){toast("That doesn't look like a UPI ID. It should look like name@bank.");$("dUpi").focus();return}const x=await addPerson(n,u);toast(`${x.name} added`);openDetail({kind:"friend",id:x.id});render()};
   }
   else if(st.kind==="newGroup"||st.kind==="editGroup"){
     const g=st.kind==="editGroup"?groups.find(x=>x.id===st.id):null;
@@ -1343,6 +1364,7 @@ function renderDetail(){
       closeDetail(); render();
       try{await store.removeGroup(g.id);for(const t of moved)await store.saveTxn(t);toast("Group deleted. Its expenses and balances are kept.")}catch(err){saveErr(err)}};
   }
+  else if(st.kind==="import"){ renderImport(st,el); }
   else if(st.kind==="friend"){
     const p=people.find(x=>x.id===st.id); if(!p){closeDetail();return}
     const bal=balancesWithMe()[p.id]||0;
@@ -1351,6 +1373,7 @@ function renderDetail(){
     const reminder=`Hi ${p.name}, quick reminder from Galla: you owe me ${inr2.format(bal)}. ${hist.filter(t=>t.split&&t.split.paidBy==="me").slice(0,3).map(t=>`${t.desc} (${inr.format(t.split.shares[p.id])})`).join(", ")}. Thanks!`;
     el.innerHTML=`<div class="sheet-h"><div class="dhead">${avatar(p.id,"lg")}<div class="t"><h2>${esc(p.name)}</h2><div class="dstatus">${bal>0.009?`<span class="pos-t">owes you ${inr2.format(bal)}</span>`:bal<-0.009?`<span class="neg-t">you owe ${inr2.format(-bal)}</span>`:"All settled up"}</div></div></div>${closeBtn}</div>
       ${p.upi?`<div class="upi">UPI <code>${esc(p.upi)}</code><button class="smallbtn" id="dCopyUpi">Copy</button></div>`:""}
+      ${bal<-0.009?(validUpi(p.upi)?`<div class="upi-pay"><a class="primary" id="dUpiPay" href="${esc(upiLink(p,-bal))}">Pay ${inr2.format(-bal)} with UPI</a><p class="note">Opens GPay, PhonePe or another UPI app on your phone with ${esc(p.name)}'s UPI ID and the amount filled in. Galla doesn't send money itself.</p><button class="ghost" id="dUpiDone" hidden>I've paid, record ${inr2.format(-bal)}</button></div>`:`<p class="note">Add ${esc(p.name)}'s UPI ID below to pay them from here.</p>`):""}
       <div class="dsec"><h3>Record a payment</h3>
         <form id="dSettle" style="display:grid;gap:10px">
           <div class="seg" id="dDir" role="group" aria-label="Who paid" style="justify-self:start"><button type="button" data-d="them" aria-pressed="${dir==="them"}">${esc(p.name)} paid you</button><button type="button" data-d="me" aria-pressed="${dir==="me"}">You paid ${esc(p.name)}</button></div>
@@ -1371,7 +1394,8 @@ function renderDetail(){
       d==="them"?recordSettle(p.id,"me",a,null,$("dDate").value):recordSettle("me",p.id,a,null,$("dDate").value)};
     const rb=$("dRemind"); if(rb) rb.onclick=()=>copyText(reminder,"Reminder copied. Paste it in WhatsApp.",rb);
     const cu=$("dCopyUpi"); if(cu) cu.onclick=()=>copyText(p.upi,"UPI ID copied",cu.parentElement);
-    $("dSaveUpi").onclick=async()=>{p.upi=$("dUpiEdit").value.trim();try{await store.savePerson(p);toast("UPI ID saved")}catch(e){saveErr(e)}renderDetail()};
+    const up=$("dUpiPay"); if(up) up.onclick=()=>{const dn=$("dUpiDone");dn.hidden=false;dn.onclick=()=>recordSettle("me",p.id,-bal,null,todayISO())};
+    $("dSaveUpi").onclick=async()=>{const v=$("dUpiEdit").value.trim();if(v&&!validUpi(v)){toast("That doesn't look like a UPI ID. It should look like name@bank.");$("dUpiEdit").focus();return}p.upi=v;try{await store.savePerson(p);toast("UPI ID saved")}catch(e){saveErr(e)}renderDetail()};
     const rm=$("dRemove"); if(rm) rm.onclick=async()=>{
       if(!rm.dataset.c){rm.dataset.c=1;rm.textContent="Tap again to remove";return}
       people=people.filter(x=>x.id!==p.id);
@@ -1385,7 +1409,7 @@ function renderDetail(){
     el.innerHTML=`<div class="sheet-h"><div class="dhead"><span class="cat-ic" style="background:var(--accent-soft);color:var(--accent);width:52px;height:52px;border-radius:14px">${svg("users")}</span><div class="t"><h2>${esc(g.name)}</h2><div class="dstatus">${inr.format(tot)} spent · ${meInGroup(b.me)}</div></div></div>${closeBtn}</div>
       <div class="sheet-actions"><button class="ghost" id="gEdit" style="height:48px">Edit</button><button class="primary" id="gAdd">${svg("plus")}Add expense</button></div>
       <div class="dsec"><h3>Balances</h3>${["me",...(g.members||[])].map(m=>`<div class="suggest">${avatar(m,"sm")}<span>${esc(pName(m))}</span><span class="num ${b[m]>0.009?"pos-t":b[m]<-0.009?"neg-t":""}">${b[m]>0.009?"gets back "+inr2.format(b[m]):b[m]<-0.009?"owes "+inr2.format(-b[m]):"settled"}</span></div>`).join("")}</div>
-      <div class="dsec"><h3>Who owes whom</h3>${sug.length?sug.map((x,i)=>`<div class="suggest">${avatar(x.from,"sm")}<span>${esc(pName(x.from))} ${x.from==="me"?"owe":"owes"} ${esc(x.to==="me"?"you":pName(x.to))} <b class="num">${inr2.format(x.amount)}</b></span><button class="smallbtn" data-sug="${i}">Mark paid</button></div>`).join(""):'<div class="remain">Everyone is settled up in this group.</div>'}</div>
+      <div class="dsec"><h3>Who owes whom</h3>${sug.length?sug.map((x,i)=>`<div class="suggest">${avatar(x.from,"sm")}<span>${esc(pName(x.from))} ${x.from==="me"?"owe":"owes"} ${esc(x.to==="me"?"you":pName(x.to))} <b class="num">${inr2.format(x.amount)}</b></span>${x.from==="me"&&validUpi(people.find(q=>q.id===x.to)?.upi)?`<a class="smallbtn" href="${esc(upiLink(people.find(q=>q.id===x.to),x.amount))}">Pay via UPI</a>`:""}<button class="smallbtn" data-sug="${i}">Mark paid</button></div>`).join(""):'<div class="remain">Everyone is settled up in this group.</div>'}</div>
       <div class="dsec"><h3>Expenses</h3>${exps.length?exps.map(t=>typeOf(t)==="settle"
           ?`<div class="hist"><div><div>${esc(pName(t.from))} paid ${esc(pName(t.to))}</div><div class="m">Settle-up · ${dName(t.date,{day:"numeric",month:"short"})}</div></div><div class="r">${inr2.format(t.amount)}<button class="smallbtn danger" data-delsettle="${esc(t.id)}">Delete</button></div></div>`
           :`<div class="hist"><div><div>${esc(t.desc)}</div><div class="m">${esc(pName(t.split.paidBy))} paid · ${dName(t.date,{day:"numeric",month:"short"})} · your share ${inr.format(t.split.shares.me||0)}</div></div><div class="r">${inr2.format(t.split.total)}<button class="smallbtn" data-edit="${esc(t.id)}">Edit</button></div></div>`).join(""):'<div class="remain">No expenses yet. Add the first one.</div>'}</div>`;
@@ -1458,13 +1482,304 @@ $("exportBtn").onclick=async()=>{
   catch(e){if(e?.code!=="declined")toast("Couldn't export the file.")}
 };
 
+// ---------- bank statement import ----------
+function parseCSV(text){
+  text=String(text).replace(/^\uFEFF/,"");
+  const head=text.split(/\r?\n/).slice(0,30).join("\n"), cnt=c=>head.split(c).length-1;
+  const delim=cnt("\t")>cnt(",")&&cnt("\t")>cnt(";")?"\t":cnt(";")>cnt(",")?";":",";
+  const rows=[]; let row=[], f="", q=false;
+  for(let i=0;i<text.length;i++){const ch=text[i];
+    if(q){if(ch==='"'){if(text[i+1]==='"'){f+='"';i++}else q=false}else f+=ch}
+    else if(ch==='"'&&f==="")q=true;
+    else if(ch===delim){row.push(f);f=""}
+    else if(ch==="\n"||ch==="\r"){if(ch==="\r"&&text[i+1]==="\n")i++;row.push(f);rows.push(row);row=[];f=""}
+    else f+=ch}
+  if(f!==""||row.length){row.push(f);rows.push(row)}
+  return rows.map(r=>r.map(c=>c.trim())).filter(r=>r.some(Boolean));
+}
+const MON={jan:1,feb:2,mar:3,apr:4,may:5,jun:6,jul:7,aug:8,sep:9,sept:9,oct:10,nov:11,dec:12};
+function parseStmtDate(v){
+  v=String(v||"").trim(); let m, y, mo, d;
+  const yy=x=>x.length===2?2000+(+x):+x;
+  if((m=v.match(/^(\d{4})[-\/.](\d{1,2})[-\/.](\d{1,2})/))){y=+m[1];mo=+m[2];d=+m[3]}
+  else if((m=v.match(/^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{2,4})\b/))){d=+m[1];mo=+m[2];y=yy(m[3])}
+  else if((m=v.match(/^(\d{1,2})[-\/ ]([A-Za-z]{3,9})[-\/ ,]+(\d{2,4})\b/))){d=+m[1];mo=MON[m[2].slice(0,m[2].toLowerCase().startsWith("sept")?4:3).toLowerCase()];y=yy(m[3])}
+  else if((m=v.match(/^([A-Za-z]{3,9}) (\d{1,2}),? (\d{4})\b/))){mo=MON[m[1].slice(0,3).toLowerCase()];d=+m[2];y=+m[3]}
+  else return "";
+  if(!mo||mo>12||!d||y<1990||y>2200)return "";
+  const k=`${y}-${pad(mo)}`; if(d>dim(k))return "";
+  return `${k}-${pad(d)}`;
+}
+function parseStmtAmt(v){
+  let s=String(v||"").trim(); if(!s)return null;
+  const neg=/^\(.*\)$/.test(s)||/^-/.test(s)||/-$/.test(s), cr=/\bcr\.?$/i.test(s), dr=/\bdr\.?$/i.test(s);
+  s=s.replace(/\b(cr|dr)\.?$/i,"").replace(/inr|rs\.?|₹|,|\s|[()+-]/gi,"");
+  const n=parseFloat(s); return Number.isFinite(n)&&n>0?{n:r2(n),neg,cr,dr}:null;
+}
+const STMT_SKIP=/^(upi|imps|neft|rtgs|pos|ach|nach|ecs|mmt|dr|cr|p2m|p2a|pay|payment|paid|to|from|transfer|trf|txn|ref|ybl|ibl|axl|apl|paytm|okaxis|oksbi|okicici|okhdfcbank|sbin|hdfc|icic|utib|yesb|kkbk|barb|punb|ubin|cnrb|idfb|indb|bank|ltd|pvt|india)$/i;
+function cleanStmtDesc(d){
+  const raw=String(d||"").replace(/\s+/g," ").trim();
+  if(/\batm\b.*\b(wdl|withdrawal|cash)\b|\bcash wdl\b/i.test(raw)) return "Cash withdrawal";
+  const tc=w=>w===w.toUpperCase()?w.toLowerCase().replace(/\b\w/g,c=>c.toUpperCase()):w;
+  const m=raw.replace(/^(by|to)\s+transfer\s*[-:]?\s*/i,"").match(/\b(upi|neft|imps|rtgs|pos|ach|nach|mmt)\b(.*)$/i);
+  if(m){
+    const parts=m[2].split(/[\/|:*-]+/).map(x=>x.trim().split(" ").filter(w=>!/\d/.test(w)&&!w.includes("@")).join(" ").trim())
+      .filter(x=>/[a-z]{3,}/i.test(x)&&!STMT_SKIP.test(x));
+    if(parts.length) return tc(parts[0]).slice(0,80);
+  }
+  return tc(raw).slice(0,80)||"Imported entry";
+}
+const STMT_CATS=[
+  [/swiggy|zomato|restaurant|cafe|coffee|starbucks|domino|pizza|kfc|mcdonald|burger|eatsure|dining|food/i,"Food & dining"],
+  [/bigbasket|blinkit|zepto|instamart|dmart|grofers|jiomart|grocery|supermarket|kirana|more retail|nature.?s basket/i,"Groceries"],
+  [/uber|ola|rapido|irctc|metro|fuel|petrol|diesel|hpcl|bpcl|iocl|indian oil|fastag|parking|redbus|cab/i,"Transport"],
+  [/rent|nobroker|housing|maintenance|society/i,"Rent & housing"],
+  [/airtel|jio|vodafone|\bvi\b|bsnl|electricity|bescom|tata power|adani|mseb|water|gas|recharge|broadband|act fibernet|dth|bill/i,"Bills & recharge"],
+  [/amazon|flipkart|myntra|ajio|nykaa|meesho|decathlon|croma|reliance digital|shopping/i,"Shopping"],
+  [/pharma|apollo|medplus|1mg|netmeds|hospital|clinic|diagnostic|practo|health/i,"Health"],
+  [/netflix|spotify|hotstar|prime video|youtube|bookmyshow|pvr|inox|sony liv|zee5|gaming|steam/i,"Entertainment"],
+  [/makemytrip|goibibo|indigo|air india|vistara|akasa|spicejet|cleartrip|ixigo|oyo|airbnb|hotel|booking\.com/i,"Travel"],
+  [/udemy|coursera|byju|unacademy|school|college|tuition|fees|books/i,"Education"],
+  [/zerodha|groww|upstox|mutual fund|\bsip\b|\bmf\b|nps|ppf|indmoney|kuvera|coin/i,"Investments"]];
+const STMT_INC=[[/salary|sal\b|payroll/i,"Salary"],[/interest|int\.? pd|int credit/i,"Interest"],[/refund|reversal|cashback/i,"Refund"]];
+function guessStmtCat(text,type){
+  for(const [re,c] of type==="income"?STMT_INC:STMT_CATS) if(re.test(text)) return c;
+  return type==="income"?"Other income":"Other";
+}
+function guessStmtPay(text){
+  if(/upi/i.test(text))return "UPI";
+  if(/\b(pos|card|visa|mastercard|rupay|ecom)\b/i.test(text))return "Card";
+  if(/\b(atm|cash)\b/i.test(text))return "Cash";
+  if(/\b(nach|ach|ecs|si|autopay|auto ?debit|mandate)\b/i.test(text))return "Auto-debit";
+  if(/\b(neft|imps|rtgs|net ?banking|ib|mmt)\b/i.test(text))return "Net banking";
+  return settings.preferences?.defaultPay||"UPI";
+}
+function detectStmtColumns(rows){
+  for(let i=0;i<Math.min(rows.length,40);i++){
+    const h=rows[i].map(c=>c.toLowerCase());
+    const hasDate=h.some(c=>/date/.test(c)), hasAmt=h.some(c=>/amount|debit|withdraw|credit|deposit|\bdr\b|\bcr\b/.test(c));
+    if(!hasDate||!hasAmt)continue;
+    const find=(re,not)=>h.findIndex(c=>re.test(c)&&!(not&&not.test(c)));
+    let date=find(/(txn|transaction|tran|posting)\s*date/); if(date<0)date=find(/date/,/value/); if(date<0)date=find(/date/);
+    const debit=find(/debit|withdraw|paid out|\bdr\b/,/date|cr\s*\/|\/\s*cr/), credit=find(/credit|deposit|paid in|\bcr\b/,/date|dr\s*\/|\/\s*dr|card/);
+    const type=find(/dr\s*\/\s*cr|cr\s*\/\s*dr|^type$|transaction type|debit\/credit/);
+    const amount=find(/amount|amt/,/withdraw|deposit|debit|credit|balance/);
+    const desc=find(/narration|description|particular|remark|details|merchant|payee|beneficiary/);
+    return {header:i,date,desc,debit,credit,amount,type,cols:rows[i]};
+  }
+  return null;
+}
+function readStmtRows(rows,map){
+  const out=[];
+  for(const r of rows.slice(map.header+1)){
+    const date=parseStmtDate(r[map.date]); if(!date)continue;
+    let amt=null,type="expense";
+    const dv=map.debit>=0?parseStmtAmt(r[map.debit]):null, cv=map.credit>=0?parseStmtAmt(r[map.credit]):null;
+    if(dv){amt=dv.n;type="expense"} else if(cv){amt=cv.n;type="income"}
+    else if(map.amount>=0){const a=parseStmtAmt(r[map.amount]); if(a){amt=a.n;
+      const t=map.type>=0?String(r[map.type]||"").toLowerCase():"";
+      type=/cr|credit|deposit/.test(t)?"income":/dr|debit|withdraw/.test(t)?"expense":a.cr?"income":"expense"}}
+    if(!amt)continue;
+    const rawDesc=map.desc>=0?r[map.desc]:"", text=`${rawDesc}`;
+    out.push({date,type,amount:amt,raw:rawDesc,desc:cleanStmtDesc(rawDesc),cat:guessStmtCat(text,type),pay:guessStmtPay(text)});
+    if(out.length>=3000)break;
+  }
+  const have=new Set(txns.filter(t=>typeOf(t)!=="settle").map(t=>`${t.date}|${typeOf(t)}|${r2(t.split?t.split.total:t.amount)}`));
+  out.forEach(x=>{x.dup=have.has(`${x.date}|${x.type}|${x.amount}`);x.on=!x.dup});
+  return out;
+}
+function renderImport(st,el){
+  const colOpts=(cur)=>`<option value="-1">None</option>`+st.map.cols.map((c,i)=>`<option value="${i}" ${i===cur?"selected":""}>${esc(c||`Column ${i+1}`)}</option>`).join("");
+  if(!st.items){
+    el.innerHTML=`<div class="sheet-h"><h2>Import a bank statement</h2>${closeBtn}</div>
+      <p class="note">Download your statement from net banking or your UPI app as a <strong>CSV</strong> file, then choose it here. Galla reads it in this browser, guesses categories, and lets you check every row before anything is added. Excel files need to be saved as CSV first.</p>
+      <label class="primary file-label imp-pick">Choose CSV file<input type="file" id="impFile" accept=".csv,text/csv,text/plain"></label>
+      <p class="note" id="impMsg" role="status" aria-live="polite">${esc(st.msg||"")}</p>`;
+    $("impFile").onchange=async e=>{
+      const f=e.target.files[0]; if(!f)return;
+      if(f.size>5*1024*1024){st.msg="That file is over 5 MB. Export a shorter date range.";renderDetail();return}
+      const rows=parseCSV(await f.text()), map=detectStmtColumns(rows);
+      if(!map){st.msg="Couldn't find the date and amount columns in that file. Check it's a CSV statement with a header row.";renderDetail();return}
+      const items=readStmtRows(rows,map);
+      if(!items.length){st.msg="No transactions with a date and amount were found in that file.";renderDetail();return}
+      Object.assign(st,{rows,map,items,file:f.name,msg:""}); renderDetail();
+    };
+    return;
+  }
+  const on=st.items.filter(x=>x.on), dups=st.items.filter(x=>x.dup).length;
+  const dates=st.items.map(x=>x.date).sort(), span=`${dName(dates[0],{day:"numeric",month:"short"})} to ${dName(dates[dates.length-1],{day:"numeric",month:"short",year:"numeric"})}`;
+  const catSel=(x,i)=>`<select class="imp-cat" data-i="${i}" aria-label="Category for ${esc(x.desc)}">${(x.type==="income"?INC:EXP).map(c=>`<option ${c.n===x.cat?"selected":""}>${esc(c.n)}</option>`).join("")}</select>`;
+  el.innerHTML=`<div class="sheet-h"><h2>Review ${st.items.length} transactions</h2>${closeBtn}</div>
+    <p class="note">From <strong>${esc(st.file)}</strong>, ${span}.${dups?` ${dups} look like entries you already have, so they're unticked.`:""}</p>
+    <details class="entry-options"><summary>Columns used</summary><div class="imp-map">
+      ${[["date","Date"],["desc","Description"],["debit","Money out"],["credit","Money in"],["amount","Amount"],["type","Debit or credit"]].map(([k,l])=>`<label class="fl">${l}<select data-map="${k}">${colOpts(st.map[k])}</select></label>`).join("")}
+    </div></details>
+    <div class="imp-bar"><label class="imp-all"><input type="checkbox" id="impAll" ${on.length===st.items.length?"checked":""}> Select all</label><span class="num">${on.length} selected · −${inr.format(r2(on.filter(x=>x.type==="expense").reduce((a,x)=>a+x.amount,0)))} · +${inr.format(r2(on.filter(x=>x.type==="income").reduce((a,x)=>a+x.amount,0)))}</span></div>
+    <div class="imp-list">${st.items.map((x,i)=>`<div class="imp-row${x.on?"":" off"}">
+      <input type="checkbox" data-on="${i}" ${x.on?"checked":""} aria-label="Import ${esc(x.desc)}">
+      <div class="imp-main"><input class="imp-desc" data-desc="${i}" value="${esc(x.desc)}" maxlength="80" aria-label="Description" title="${esc(x.raw)}"><div class="imp-meta">${dName(x.date,{day:"numeric",month:"short"})}, ${esc(x.pay)}${x.dup?' <span class="tag">already in Galla?</span>':""}</div></div>
+      ${catSel(x,i)}
+      <button type="button" class="imp-type ${x.type}" data-type="${i}" aria-label="Switch between money out and money in">${x.type==="income"?"+":"−"}${inr2.format(x.amount)}</button>
+    </div>`).join("")}</div>
+    <div class="sheet-actions imp-actions"><button type="button" class="ghost" id="impBack">Choose another file</button><button class="primary" id="impSave" ${on.length?"":"disabled"}>Add ${on.length} entr${on.length===1?"y":"ies"}</button></div>
+    <p class="note" id="impMsg" role="status" aria-live="polite">${esc(st.msg||"")}</p>`;
+  el.querySelectorAll("[data-on]").forEach(c=>c.onchange=()=>{st.items[+c.dataset.on].on=c.checked;renderDetail()});
+  el.querySelectorAll("[data-desc]").forEach(c=>c.oninput=()=>{st.items[+c.dataset.desc].desc=c.value});
+  el.querySelectorAll(".imp-cat").forEach(c=>c.onchange=()=>{st.items[+c.dataset.i].cat=c.value});
+  el.querySelectorAll("[data-type]").forEach(b=>b.onclick=()=>{const x=st.items[+b.dataset.type];x.type=x.type==="income"?"expense":"income";x.cat=guessStmtCat(x.raw,x.type);renderDetail()});
+  el.querySelectorAll("[data-map]").forEach(sel=>sel.onchange=()=>{st.map[sel.dataset.map]=+sel.value;st.items=readStmtRows(st.rows,st.map);if(!st.items.length){st.items=null;st.msg="No transactions found with those columns."}renderDetail()});
+  $("impAll").onchange=e=>{st.items.forEach(x=>x.on=e.target.checked);renderDetail()};
+  $("impBack").onclick=()=>{Object.assign(st,{items:null,rows:null,map:null,msg:""});renderDetail()};
+  $("impSave").onclick=async()=>{
+    if(!store||!ready.txns){st.msg="Your ledger is still loading. Try again shortly.";renderDetail();return}
+    const pick=st.items.filter(x=>x.on), base=Date.now();
+    const add=pick.map((x,i)=>({id:newId("e"),amount:x.amount,desc:(x.desc.trim()||"Imported entry").slice(0,80),cat:x.cat,pay:x.pay,type:x.type,date:x.date,created:base+i}));
+    const previous=txns; txns=txns.concat(add); $("impSave").disabled=true; $("impMsg").textContent="Saving…";
+    try{
+      if(store.commitLedger) await store.commitLedger(); else for(const t of add) await store.saveTxn(t);
+      cur=mKey(add.map(t=>t.date).sort().pop()); closeDetail(); render(); toast(`Added ${add.length} entr${add.length===1?"y":"ies"} from your statement`);
+    }catch(e){txns=previous;st.msg="Not saved. Nothing was added; try again.";renderDetail();saveErr(e)}
+  };
+}
+$("importBtn").onclick=()=>openDetail({kind:"import"});
+
+// ---------- account and cloud sync (Supabase) ----------
+// The ledger always lives in this browser first. When signed in, a copy is kept in the
+// user's private Supabase row and devices merge changes entry by entry (three-way merge
+// against the last version this device synced), so offline edits on two devices both survive.
+const CLOUD_CFG=window.GALLA_CONFIG||{};
+const cloud={on:!!(CLOUD_CFG.supabaseUrl&&CLOUD_CFG.supabaseAnonKey),local:false,client:null,user:null,version:0,state:"off",msg:"",busy:false,dirty:false,sentTo:"",loadErr:"",timer:null};
+const SB_SRC="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.119.0/dist/umd/supabase.js";
+const canon=v=>Array.isArray(v)?`[${v.map(canon).join(",")}]`:v&&typeof v==="object"?`{${Object.keys(v).sort().filter(k=>v[k]!==undefined).map(k=>JSON.stringify(k)+":"+canon(v[k])).join(",")}}`:JSON.stringify(v);
+const syncKey=n=>`galla-sync-${n}-${cloud.user.id}`;
+const readBase=()=>{try{return JSON.parse(localStorage.getItem(syncKey("base")))}catch{return null}};
+const writeBase=d=>{try{localStorage.setItem(syncKey("base"),JSON.stringify(d));localStorage.setItem(syncKey("version"),String(cloud.version))}catch{}};
+const LEDGER_COLS=["txns","rules","people","groups"];
+const isEmptyLedger=d=>LEDGER_COLS.every(k=>(d[k]||[]).every(x=>x.sample));
+function mergeLedgers(base,local,remote){
+  base=base||{}; const out={};
+  for(const k of LEDGER_COLS){
+    const B=new Map((base[k]||[]).map(x=>[x.id,canon(x)])), L=new Map((local[k]||[]).map(x=>[x.id,x])), R=new Map((remote[k]||[]).map(x=>[x.id,x]));
+    out[k]=[];
+    for(const id of new Set([...L.keys(),...R.keys()])){
+      const l=L.get(id), r=R.get(id), b=B.get(id);
+      if(l&&r) out[k].push(canon(l)!==b&&canon(r)===b?l:r);       // both have it: keep the side that changed it
+      else if(l){if(b===undefined||canon(l)!==b)out[k].push(l)}   // new here, or edited here after a delete elsewhere
+      else if(r){if(b===undefined||canon(r)!==b)out[k].push(r)}
+    }
+  }
+  out.settings=canon(local.settings||{})!==canon(base.settings||{})?local.settings:remote.settings;
+  out.settings={budget:0,catBudgets:{},...(out.settings||{})};
+  return out;
+}
+function loadSupabase(){
+  if(window.supabase?.createClient)return Promise.resolve(window.supabase);
+  return new Promise((res,rej)=>{const sc=document.createElement("script");sc.src=SB_SRC;sc.crossOrigin="anonymous";sc.onload=()=>window.supabase?.createClient?res(window.supabase):rej(new Error("x"));sc.onerror=()=>rej(new Error("x"));document.head.append(sc)});
+}
+async function cloudInit(){
+  renderCloudStatus(); if(!cloud.on)return;
+  try{
+    const lib=await loadSupabase();
+    cloud.client=lib.createClient(CLOUD_CFG.supabaseUrl,CLOUD_CFG.supabaseAnonKey,{auth:{persistSession:true,autoRefreshToken:true,detectSessionInUrl:true}});
+    const {data}=await cloud.client.auth.getSession(); cloudUser(data?.session?.user||null);
+    cloud.client.auth.onAuthStateChange((_e,session)=>cloudUser(session?.user||null));
+  }catch{cloud.loadErr="Couldn't load sign-in. Check your connection and reload the page.";renderAccount()}
+  addEventListener("online",()=>cloud.user&&syncNow());
+  addEventListener("focus",()=>cloud.user&&checkRemote());
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden&&cloud.user)checkRemote()});
+  cloud.timer=setInterval(()=>{if(!document.hidden&&cloud.user)checkRemote()},45000);
+}
+function cloudUser(u){
+  if((u?.id||null)===(cloud.user?.id||null))return;
+  cloud.user=u; cloud.sentTo="";
+  if(u){cloud.version=+localStorage.getItem(syncKey("version"))||0;syncNow()} else {cloud.state="off"}
+  renderAccount(); renderCloudStatus();
+}
+function cloudAfterCommit(){if(!cloud.user)return;clearTimeout(cloud.pushT);cloud.pushT=setTimeout(syncNow,600)}
+async function checkRemote(){
+  if(cloud.busy)return;
+  try{const {data,error}=await cloud.client.from("ledgers").select("version").eq("user_id",cloud.user.id).maybeSingle();if(!error&&(data?.version||0)!==cloud.version)syncNow()}catch{}
+}
+function setCloud(state,msg=""){cloud.state=state;cloud.msg=msg;renderCloudStatus()}
+async function syncNow(){
+  if(!cloud.user)return; if(cloud.busy){cloud.dirty=true;return}
+  if(!ready.txns||entrySaving){cloud.dirty=true;setTimeout(()=>{if(cloud.dirty&&!cloud.busy)syncNow()},800);return}
+  cloud.busy=true; cloud.dirty=false; setCloud("syncing");
+  const uid=cloud.user.id, tbl=()=>cloud.client.from("ledgers");
+  try{
+    let done=false;
+    for(let attempt=0;attempt<4&&!done;attempt++){
+      const {data:row,error}=await tbl().select("data,version").eq("user_id",uid).maybeSingle(); if(error)throw error;
+      const local=JSON.parse(JSON.stringify(ledgerData()));
+      if(!row){
+        const {error:e}=await tbl().insert({user_id:uid,data:local,version:1});
+        if(e){if(e.code==="23505")continue;throw e}
+        cloud.version=1; writeBase(local); done=true; break;
+      }
+      let remote; try{remote=validateBackup({app:"Galla",version:1,data:row.data})}catch{setCloud("error","The copy in your account couldn't be read, so it wasn't loaded. Your data on this device is unchanged.");return}
+      const base=readBase();
+      let next=local;
+      if(row.version!==cloud.version||!base) next=!base&&isEmptyLedger(local)?remote:mergeLedgers(base,local,remote);
+      if(canon(next)!==canon(local)){await store.replaceLedger(next);render();materialize()}
+      if(canon(next)===canon(remote)){cloud.version=row.version;writeBase(next);done=true;break}
+      const {data:upd,error:e2}=await tbl().update({data:next,version:row.version+1,updated_at:new Date().toISOString()}).eq("user_id",uid).eq("version",row.version).select("version");
+      if(e2)throw e2;
+      if(upd&&upd.length){cloud.version=row.version+1;writeBase(next);done=true}
+    }
+    if(!done)throw new Error("conflict");
+    setCloud("synced");
+  }catch{setCloud("error",navigator.onLine===false?"You're offline. Galla will sync when you're back online.":"Couldn't reach your account. Galla will try again shortly.")}
+  finally{cloud.busy=false;if(cloud.dirty)cloudAfterCommit()}
+}
+function renderCloudStatus(){
+  const side=$("sideSync"); if(side) side.textContent=!cloud.user?"On this device":cloud.state==="synced"?"Synced":cloud.state==="syncing"?"Syncing…":"Not synced yet";
+  const line=!cloud.user?"":cloud.state==="synced"?`Synced to ${cloud.user.email}. Your entries are private to your account.`:cloud.state==="syncing"?"Syncing with your account…":`Saved on this device. ${cloud.msg}`;
+  if(cloud.user)$("status").textContent=line;
+  const a=$("acctStatus"); if(a)a.textContent=line;
+}
+function renderAccount(){
+  const el=$("accountCard"); if(!el)return;
+  if(!cloud.local){el.remove();return}
+  const where=$("profileWhere"); if(where)where.textContent=cloud.user?`Signed in as ${cloud.user.email}. Your ledger syncs to your account and stays on this device too.`:"Your ledger is stored on this device.";
+  const h='<h2 id="acctTitle">Account and sync</h2>';
+  if(!cloud.on){el.innerHTML=`${h}<p class="note">Sign-in isn't set up for this copy of Galla, so your ledger stays in this browser only. To turn it on, add your Supabase project details to <code>config.js</code> (see the README).</p>`;return}
+  if(cloud.loadErr){el.innerHTML=`${h}<p class="note">${esc(cloud.loadErr)}</p>`;return}
+  if(cloud.user){
+    el.innerHTML=`${h}<p class="acct-who">Signed in as <strong>${esc(cloud.user.email||"")}</strong></p><p class="note" id="acctStatus" role="status" aria-live="polite"></p>
+      <div class="profile-actions"><button class="ghost" id="acctSync">Sync now</button><button class="ghost" id="acctOut">Sign out</button><button class="dangerbtn" id="acctWipe">Sign out and remove data from this device</button></div>`;
+    renderCloudStatus();
+    $("acctSync").onclick=()=>syncNow();
+    $("acctOut").onclick=async()=>{await cloud.client.auth.signOut();cloudUser(null);toast("Signed out. Your ledger is still on this device.")};
+    const w=$("acctWipe"); w.onclick=async()=>{
+      if(!w.dataset.c){w.dataset.c=1;w.classList.add("confirm");w.textContent="Tap again to sign out and remove";return}
+      const id=cloud.user.id; await cloud.client.auth.signOut();
+      for(const k of ["base","version"])localStorage.removeItem(`galla-sync-${k}-${id}`);
+      await store.replaceLedger({txns:[],rules:[],people:[],groups:[],settings:{budget:0,catBudgets:{}}}); cloudUser(null); render(); toast("Signed out and removed from this device. Your account still has your data.");
+    };
+    return;
+  }
+  if(cloud.sentTo){
+    el.innerHTML=`${h}<p>We've emailed a sign-in link to <strong>${esc(cloud.sentTo)}</strong>. Open it on this device to finish signing in.</p><div class="profile-actions"><button class="ghost" id="acctBack">Use a different email</button></div>`;
+    $("acctBack").onclick=()=>{cloud.sentTo="";renderAccount()};return;
+  }
+  el.innerHTML=`${h}<p class="note">Sign in to keep your ledger in sync across your phone and laptop. No password: we'll email you a link. Your entries stay on this device too, and only you can see them.</p>
+    <form id="acctForm" class="acct-form"><label class="fl">Email<input id="acctEmail" type="email" autocomplete="email" required placeholder="you@example.com"></label><button class="primary" type="submit" id="acctSend">Email me a sign-in link</button></form><p class="note" id="acctMsg" role="status" aria-live="polite"></p>`;
+  $("acctForm").onsubmit=async e=>{
+    e.preventDefault(); const email=$("acctEmail").value.trim(); if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){$("acctMsg").textContent="Enter a valid email address.";return}
+    $("acctSend").disabled=true; $("acctMsg").textContent="Sending…";
+    const {error}=await cloud.client.auth.signInWithOtp({email,options:{emailRedirectTo:location.origin+location.pathname}});
+    if(error){$("acctSend").disabled=false;$("acctMsg").textContent=error.status===429?"Too many sign-in emails. Wait a minute and try again.":"Couldn't send the email. Check the address and try again.";return}
+    cloud.sentTo=email; renderAccount();
+  };
+}
+
 // ---------- storage ----------
 function localStore(){
   const K="kharcha-ledger-v2"; let d={};
   try{d=JSON.parse(localStorage.getItem(K))||JSON.parse(localStorage.getItem("kharcha-ledger-v1"))||{}}catch{}
   txns=d.txns||d.expenses||[]; rules=d.rules||[]; people=d.people||[]; groups=d.groups||[]; settings={budget:d.budget||0,catBudgets:{},...(d.settings||{})};
   let durable=JSON.parse(JSON.stringify(ledgerData()));
-  const p=async()=>{try{const data=JSON.stringify(ledgerData());localStorage.setItem(K,data);durable=JSON.parse(data)}catch(e){({txns,rules,people,groups,settings}=JSON.parse(JSON.stringify(durable)));render();throw e}};
+  const p=async()=>{try{const data=JSON.stringify(ledgerData());localStorage.setItem(K,data);durable=JSON.parse(data)}catch(e){({txns,rules,people,groups,settings}=JSON.parse(JSON.stringify(durable)));render();throw e}cloudAfterCommit()};
   return {commitLedger:p,replaceLedger:async data=>{localStorage.setItem(K,JSON.stringify(data));durable=JSON.parse(JSON.stringify(data));({txns,rules,people,groups,settings}=data)},saveTxn:p,removeTxn:p,saveRule:p,removeRule:p,saveSettings:p,savePerson:p,removePerson:p,saveGroup:p,removeGroup:p};
 }
 
@@ -1479,6 +1794,7 @@ render();
   if(!db||!uid){
     store=localStore(); ready={txns:true,rules:true,settings:true}; materialize(); render();
     $("status").textContent="Saved in this browser only. Use Profile → Backup & restore for a full backup. Data stays on this device.";
+    cloud.local=true; cloudInit();
     return;
   }
   const root=db.doc("data/users/"+uid+"/ledger");

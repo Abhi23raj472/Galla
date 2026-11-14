@@ -15,10 +15,11 @@ Galla is a personal expense tracker with Splitwise-style bill splitting, built f
 - Category progress bars, day-by-day spending calendar, six-month income vs spending chart
 - Insights: spending pace vs last month, biggest expense, next recurring payment
 - Search and filter by text, type, category or day
+- Import a bank statement (CSV): columns, money in/out, categories and payment method are guessed; review every row, likely duplicates are unticked
 
 **Budgets**
-- Overall monthly budget with a progress meter and a "per day you can spend" figure
-- Per-category limits with On track / Near limit / Over status
+- Overall monthly budget with a "per day you can spend" figure that sets aside recurring payments still due this month
+- Per-category limits with On track / Near limit / Over status, and alerts on the overview when a category reaches 80% or goes over
 
 **Recurring entries**
 - Rent, salary, SIPs, EMIs and subscriptions are added when you open the app after their due date (up to 12 months of catch-up)
@@ -30,9 +31,11 @@ Galla is a personal expense tracker with Splitwise-style bill splitting, built f
 - Only your share counts toward your personal spending
 - Per-friend balances, "who owes whom" per group, one-tap settle-up
 - Save a friend's UPI ID and copy a ready-to-send WhatsApp reminder
+- Pay a friend you owe with one tap: opens GPay, PhonePe or any UPI app with their UPI ID and the amount filled in, then records the settle-up when you confirm
 
 **Privacy and extras**
 - Display name and default payment method, with optional personal details
+- Optional sign-in by email link, with your ledger synced across devices (see below)
 - Full JSON backup and validated restore, including friends, groups, rules and settings
 - CSV export for spreadsheet analysis
 - Date range search across months and amount/date sorting
@@ -45,11 +48,24 @@ Open `index.html` in a browser. That's it.
 
 To host it, enable **GitHub Pages** for this repo (Settings → Pages → deploy from the `main` branch, root folder). The app will be live at `https://<your-username>.github.io/galla/`.
 
+## Login and cloud sync (optional)
+
+Galla works without an account. To let people sign in and sync between phone and laptop, connect a free [Supabase](https://supabase.com) project:
+
+1. Create a project in Supabase.
+2. Open **SQL Editor**, paste the contents of `supabase/schema.sql` and run it. This creates one private `ledgers` row per user, protected by row-level security.
+3. Open **Authentication → URL Configuration**. Set **Site URL** to where Galla is hosted (for example `https://abhi23raj472.github.io/Galla/`) and add the same address under **Redirect URLs**.
+4. Open **Project Settings → API** and copy the **Project URL** and the **anon / publishable** key into `config.js` (and the copies in `public/` and `out/`).
+
+The anon key is designed to be public; row-level security is what keeps each person's data private. Never put the `service_role` key in `config.js` or anywhere in this repo.
+
+How it works: entries are always saved in the browser first, so Galla keeps working offline. When signed in, Galla keeps a copy in your account and checks for changes when you return to the tab and every 45 seconds. If two devices change the ledger at the same time, the changes are merged entry by entry: new entries from both are kept, and deletions and edits from either device carry over. Sign-in uses a one-time link sent by email; the default Supabase email sender is rate-limited, so set up custom SMTP in Supabase before inviting many people. Shared groups between different accounts are not part of sync yet; each person's ledger is private to them.
+
 ## Where data is stored
 
 | Where Galla runs | Storage |
 |---|---|
-| Opened directly or on GitHub Pages | The browser's `localStorage` on that device. Clearing site data erases it, and it doesn't sync between devices. Use the full JSON backup in Profile to preserve all data; CSV is for analysis. |
+| Opened directly or on GitHub Pages | The browser's `localStorage` on that device. Clearing site data erases it. It syncs between devices only when sign-in is set up and you're signed in. Use the full JSON backup in Profile to preserve all data; CSV is for analysis. |
 | As a Claude artifact (claude.ai) | The signed-in user's private artifact storage, synced across devices. |
 
 The app detects which one is available and picks automatically.
@@ -63,6 +79,7 @@ pip install playwright
 python -m playwright install chromium
 python tests/run.py
 python tests/improvements.py
+python tests/features.py
 ```
 
 The suite checks: adding, editing and deleting entries, income and balance maths, recurring back-fill and de-duplication, budgets, equal/exact/percent splits, settle-ups, balance consistency between friends and groups, group deletion, profile saving and reload persistence, sample data, filters, CSV export, the browser-only fallback, and no sideways scrolling at phone and desktop widths in light and dark system themes. Screenshots are saved to `tests/screenshots/`.
@@ -74,6 +91,10 @@ index.html           the whole app (HTML, base CSS, JS)
 premium.css          the visual theme
 assets/galla-logo.svg
 tests/run.py         Playwright end-to-end suite
+tests/features.py    allowance, alerts, UPI, statement import and sync checks
+tests/fixtures/      sample bank statements used by the import checks
+config.js            Supabase settings for optional sign-in (empty = browser only)
+supabase/schema.sql  database table and row-level security for sync
 tests/mock.js        in-memory stand-in for the Claude artifact storage
 ```
 

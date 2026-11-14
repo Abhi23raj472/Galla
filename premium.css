@@ -339,3 +339,49 @@ select.sel,.sel{background:var(--surface-2);border:0;border-radius:14px;min-heig
 }
 @media (prefers-reduced-transparency:reduce){.bottom-nav{background:#FFFFFF;backdrop-filter:none}}
 @media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+
+/* ---------- category alerts and UPI ---------- */
+.cat-alerts{list-style:none;margin:18px 0 0;padding:0;display:flex;flex-direction:column;gap:8px;max-width:46ch}
+.cat-alerts li{display:flex;align-items:center;gap:10px;font-size:15px;color:var(--vault-ink)}
+.cat-alerts .dot{width:8px;height:8px;border-radius:50%;flex:none;background:var(--brass)}
+.cat-alerts li.over .dot{background:#F2B8B5}
+.cat-alerts .linkbtn{color:var(--brass-ink);font-size:15px}
+.upi-pay{display:grid;gap:8px;justify-items:start;padding:14px 0}
+.upi-pay .primary{text-decoration:none}
+.upi-pay .note{margin:0}
+.suggest a.smallbtn{text-decoration:none;color:var(--accent);white-space:nowrap}
+.suggest{display:flex;flex-wrap:wrap;align-items:center;gap:8px 10px}
+.suggest>span:nth-child(2){flex:1 1 150px;min-width:0}
+
+/* ---------- statement import ---------- */
+@media (min-width:640px){.sheet.wide{max-width:860px}}
+.imp-pick{position:relative;justify-self:start;margin:6px 0}
+.imp-map{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}
+.imp-bar{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;padding:10px 0;border-bottom:1px solid var(--line);font-size:14px;color:var(--muted)}
+.imp-all{display:flex;gap:8px;align-items:center;color:var(--ink);font-weight:600;min-height:44px}
+.imp-all input,.imp-row>input[type=checkbox]{width:18px;height:18px;accent-color:var(--accent)}
+.imp-list{display:flex;flex-direction:column;max-height:52dvh;overflow:auto;margin:0 -4px;padding:0 4px}
+.imp-row{display:grid;grid-template-columns:24px minmax(0,1fr) 180px 120px;gap:12px;align-items:center;padding:10px 0;border-bottom:1px solid #EFF1EC}
+.imp-row.off{opacity:.55}
+.imp-desc{width:100%;border:0;background:transparent;font-weight:600;padding:4px 6px;margin-left:-6px;border-radius:8px;min-height:32px}
+.imp-desc:hover,.imp-desc:focus{background:var(--surface-2)}
+.imp-meta{font-size:13px;color:var(--muted)}
+.imp-cat{border:0;background:var(--surface-2);border-radius:10px;min-height:38px;padding:0 8px;width:100%;min-width:0}
+.imp-type{justify-self:end;border:0;background:none;font-weight:600;font-variant-numeric:tabular-nums;white-space:nowrap;min-height:38px;padding:0 6px;border-radius:8px;color:var(--ink)}
+.imp-type.income{color:var(--income)}
+.imp-type:hover{background:var(--surface-2)}
+.imp-actions{margin-top:14px}
+@media (max-width:640px){
+  .imp-map{grid-template-columns:minmax(0,1fr) minmax(0,1fr)}
+  .imp-row{grid-template-columns:24px minmax(0,1fr) auto}
+  .imp-cat{grid-column:2/-1}
+}
+
+/* ---------- account ---------- */
+.account-card{margin-bottom:20px}
+.account-card h2{margin-bottom:8px}
+.acct-who{margin:4px 0}
+.acct-form{display:flex;gap:12px;align-items:flex-end;flex-wrap:wrap;margin-top:12px}
+.acct-form .fl{flex:1 1 240px}
+.account-card code{background:var(--surface-2);padding:1px 6px;border-radius:6px}
+.sheet .inline-add input{background:var(--surface-2);border:0;border-radius:12px;min-height:40px}
