@@ -2,7 +2,7 @@
 
 **Spend · Split · Settle**
 
-Galla is a personal expense tracker with Splitwise-style bill splitting, built for India (₹). It uses static HTML, a glass-style dashboard stylesheet and an optimized background asset, with no build step or server required.
+Galla is a personal expense tracker with Splitwise-style bill splitting, built for India (₹). It uses static HTML with a minimal light stylesheet (`minimal.css`), with no build step or server required.
 
 <img src="assets/galla-logo.svg" width="96" alt="Galla logo">
 
@@ -69,7 +69,8 @@ The suite checks: adding, editing and deleting entries, income and balance maths
 ## Project layout
 
 ```
-index.html           the whole app (HTML, CSS, JS)
+index.html           the whole app (HTML, base CSS, JS)
+minimal.css          the visual theme
 assets/galla-logo.svg
 tests/run.py         Playwright end-to-end suite
 tests/mock.js        in-memory stand-in for the Claude artifact storage
